@@ -1,0 +1,8 @@
+[2026-02-17 01:12:03] ALERT: testing1 (192.168.1.10) -> DOWN (started at 2026-02-17 01:12:03)
+[2026-02-17 01:12:05] INFO: testing1 (192.168.1.10) -> UP at 2026-02-17 01:12:05 (downtime: 0h 0m 2s)
+[2026-02-17 01:12:37] ALERT: testing1 (192.168.1.10) -> DOWN (started at 2026-02-17 01:12:37)
+[2026-02-17 01:12:37] GLOBAL FLAG wrote /home/baymax/Program/testingmonitoring/shared/needrestart.json
+[2026-02-17 01:13:48] INFO: testing1 (192.168.1.7) -> UP at 2026-02-17 01:13:48 (downtime: 0h 1m 11s)
+[2026-02-17 01:14:04] ALERT: testing1 (192.168.1.7) -> DOWN (started at 2026-02-17 01:14:04)
+[2026-02-17 01:14:04] GLOBAL FLAG wrote /home/baymax/Program/testingmonitoring/shared/needrestart.json
+[2026-02-17 01:14:19] INFO: testing1 (192.168.1.7) -> UP at 2026-02-17 01:14:19 (downtime: 0h 0m 15s)

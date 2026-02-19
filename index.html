@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stechoq Hardware Monitoring</title>
+
+<style>
+
+/* ================= GLOBAL ================= */
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #ffffff;
+  /* cursor: none; */
+}
+
+header {
+  background: linear-gradient(90deg,#141821,#1c212b);
+  padding: 15px 40px;
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+}
+
+/* ================= SLIDER ================= */
+
+.pages {
+  overflow: hidden;
+  width: 100vw;
+}
+
+.page-wrapper {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+
+.page {
+  min-width: 100vw;
+  padding: 30px 0;
+}
+
+/* ================= WRAPPER ================= */
+
+.wrapper {
+  position: relative;
+  width: 1400px;
+  margin: 0 auto;
+}
+
+.wrapper img {
+  width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 25px 60px #ffffff;
+}
+
+/* ================= MACHINE ================= */
+
+.machine-box {
+  position: absolute;
+  width: 150px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15,18,25,0.85);
+  color: white;
+  font-size: 12px;
+  transition: 0.25s;
+}
+
+.machine-box:hover {
+  transform: translateY(-6px);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.bottom {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.UP { border-left: 4px solid #00e676; }
+.UP .status-dot { background:#00e676; }
+
+.DOWN { border-left: 4px solid #ff1744; }
+.DOWN .status-dot {
+  background:#ff1744;
+  animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.4; }
+}
+
+/* ================= ARROWS ================= */
+
+.arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: rgba(20,25,35,0.85);
+  color: white;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: 0.2s;
+  z-index: 999;
+}
+
+.arrow:hover {
+  background: #00e676;
+}
+
+.arrow.left { left: 20px; }
+.arrow.right { right: 20px; }
+
+.indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.indicator.up {
+  background: #00e676;
+}
+
+.indicator.down {
+  background: #ff1744;
+}
+
+/* ================= MODAL ================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #1c212b;
+  color: white;
+  width: 600px;
+  max-width: 90%;
+  padding: 30px;
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content img {
+  width: 100%;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<header id="mainHeader">
+  <span id="titleText">Stechoq Hardware Monitoring - Maka Motors</span>
+  <span id="systemStatus" style="float:right; font-size:14px;">
+    <span class="indicator up"></span>
+    <span id="countUp">0</span>
+
+    <span class="indicator down" style="margin-left:15px;"></span>
+    <span id="countDown">0</span>
+  </span>
+</header>
+
+<div class="pages">
+  <div class="page-wrapper" id="pageWrapper">
+
+    <!-- PAGE 1 -->
+    <section class="page"
+             data-server="10.10.1.121"
+             data-port="10011"
+             data-title="Maka Motors">
+
+      <div class="wrapper">
+        <img src="maka-bg.png">
+
+        <!-- Conveyor -->
+        <div id="CONVEYOR" class="machine-box UP"
+          style="top:190px; left:1200px;">
+          <div class="top">
+            <div class="name">CONVEYOR</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- Main Assy Nutrunner Machines -->
+        <div id="NR_MA_02" class="machine-box UP"
+          style="top:800px; left:600px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-02</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_03" class="machine-box UP"
+          style="top:720px; left:720px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-03</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_04" class="machine-box UP"
+          style="top:640px; left:840px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-04</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_05_RH" class="machine-box UP"
+          style="top:560px; left:960px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-05-RH</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_05_LH" class="machine-box UP"
+          style="top:440px; left:830px; transform: rotate(-34deg);">
+          <div class="top">
+            <div class="name">Nutrunner MA-05-LH</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-03-04 -->
+        <div id="NR_SA_03_04" class="machine-box UP"
+          style="top:270px; left:585px; transform: rotate(-34deg);">
+          <div class="top">
+            <div class="name">Nutrunner SA-03-04</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="Tire_Inflator" class="machine-box UP"
+          style="top:180px; left:510px; transform: rotate(-34deg) scale(0.9); ">
+          <div class="top">
+            <div class="name">Tire Inflator</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-04 -->
+        <div id="Tohnichi" class="machine-box UP"
+          style="top:85px; left:700px; transform: rotate(35deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">Tohnichi</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-01 -->
+        <div id="SA_01_VIN" class="machine-box UP"
+          style="top:330px; left:275px; transform: rotate(-34deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">SA-01 VIN</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-08 -->
+        <div id="NR_SA_08" class="machine-box UP"
+          style="top:430px; left:130px; transform: rotate(-34deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">Nutrunner SA-08</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2 -->
+    <section class="page"
+          data-server="10.10.1.210"
+          data-port="10011"
+          data-title="Sugity Creative Plant1 Factory 2">
+      <div class="wrapper">
+        <img src="sugityp1f2-bg.png">
+        <div id="IOT_NODE_001" class="machine-box UP"
+          style="top:405px; left:180px;">
+          <div class="top">
+            <div class="name">IOT NODE 001</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="Printer_M_5" class="machine-box UP"
+          style="top:340px; left:180px;">
+          <div class="top">
+            <div class="name">Printer M#5</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 3 -->
+    <section class="page"
+          data-server="10.10.1.210"
+          data-port="10011"
+          data-title="Sugity Creative Plant1 Factory 4">
+      <div class="wrapper">
+        <img src="sugityp1f4-bg.png">
+        <div id="DCS_MIXING_MATERIAL_F4" class="machine-box UP"
+          style="top:600px; left:380px;">
+          <div class="top">
+            <div class="name">DCS Mixing Material</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_PLAYMAKER_F4" class="machine-box UP"
+          style="top:380px; left:370px;">
+          <div class="top">
+            <div class="name">DCS Playmaker</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_QI_F4" class="machine-box UP"
+          style="top:230px; left:370px;">
+          <div class="top">
+            <div class="name">DCS QI</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_REPAIR_IN_LINE_F4" class="machine-box UP"
+          style="top:120px; left:690px;">
+          <div class="top">
+            <div class="name">DCS Repair In Line</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_POLES_F4" class="machine-box UP"
+          style="top:160px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Poles</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_REPAIR_OUT_LINE_F4" class="machine-box DOWN"
+          style="top:230px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Repair Out Line</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_TASK_FORCE_F4" class="machine-box UP"
+          style="top:300px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Task Force</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="arrow left" onclick="prevPage()"><</div>
+<div class="arrow right" onclick="nextPage()">></div>
+
+<!-- ================= MODAL ================= -->
+<div id="machineModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">x</span>
+
+    <h2 id="modalTitle">Machine Name</h2>
+
+    <img id="modalImage" src="" alt="Machine Image">
+
+    <p id="modalDescription">
+      Deskripsi mesin akan muncul di sini.
+    </p>
+
+  </div>
+</div>
+<script>
+
+let currentPage = 0;
+let autoSlideTimer = null;
+const AUTO_SLIDE_DELAY = 10000; // 10 detik
+const wsConnections = {};
+const RECONNECT_DELAY = 3000;
+const DEVICE_TIMEOUT = 15000; // 15 detik
+const deviceLastUpdate = {};
+const wrapper = document.getElementById("pageWrapper");
+const pages = document.querySelectorAll(".page");
+const header = document.getElementById("mainHeader");
+
+let ws = null;
+
+const machineDetails = {
+
+  CONVEYOR: {
+    description: "Main conveyor line for unit transfer.",
+    image: "maka-bg.png"
+  },
+
+  NR_MA_02: {
+    description: "Nutrunner station MA-02 used for bolt tightening.",
+    image: "maka-bg.png"
+  },
+
+  DCS_MIXING_MATERIAL_F4: {
+    description: "DCS Mixing Material system at Factory 4.",
+    image: "maka-bg.png"
+  }
+
+};
+
+function updateSlide() {
+  wrapper.style.transform = `translateX(-${currentPage * 100}vw)`;
+
+  const page = pages[currentPage];
+
+  document.getElementById("titleText").textContent =
+    "Stechoq Hardware Monitoring - " + page.dataset.title;
+
+  updateCounters();
+}
+
+function nextPage() {
+  stopAutoSlide();
+
+  if (currentPage < pages.length - 1) {
+    currentPage++;
+  } else {
+    currentPage = 0;
+  }
+
+  updateSlide();
+  startAutoSlide();
+}
+
+function prevPage() {
+  stopAutoSlide();
+
+  if (currentPage > 0) {
+    currentPage--;
+  } else {
+    currentPage = pages.length - 1;
+  }
+
+  updateSlide();
+  startAutoSlide();
+}
+
+
+function startAutoSlide() {
+  stopAutoSlide();
+
+  autoSlideTimer = setTimeout(() => {
+    currentPage++;
+    if (currentPage >= pages.length) {
+      currentPage = 0;
+    }
+    updateSlide();
+    startAutoSlide(); // loop terus
+  }, AUTO_SLIDE_DELAY);
+}
+
+function stopAutoSlide() {
+  if (autoSlideTimer) {
+    clearTimeout(autoSlideTimer);
+    autoSlideTimer = null;
+  }
+}
+
+/* ===== WEBSOCKET ===== */
+function initAllWebSockets() {
+  pages.forEach((page, index) => {
+    const server = page.dataset.server;
+    const port = page.dataset.port;
+    const key = server + ":" + port;
+    function connect() {
+      const socket = new WebSocket(`ws://${server}:${port}`);
+      wsConnections[key] = socket;
+      socket.onerror = () => {
+        socket.close();
+      };
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (!data.devices) return;
+        // Cari semua page yang pakai server ini
+        pages.forEach((pageElement) => {
+          if (
+            pageElement.dataset.server === server &&
+            pageElement.dataset.port === port
+          ) {
+            data.devices.forEach(dev => {
+              const id = dev.name
+                .replace(/[^a-zA-Z0-9]/g, "_");
+              const box = pageElement.querySelector("#" + id);
+              if (!box) return;
+              box.classList.remove("UP","DOWN");
+              box.classList.add(dev.status);
+              box.querySelector(".value").textContent =
+                dev.status === "UP" ? "Running" : "Offline";
+              box.querySelector(".ip").textContent = dev.ip;
+              deviceLastUpdate[id] = Date.now();
+            });
+          }
+        });
+        updateCounters();
+      };
+    }
+    connect();
+  });
+}
+
+function startDeviceWatcher() {
+  setInterval(() => {
+    const now = Date.now();
+    Object.keys(deviceLastUpdate).forEach(id => {
+      if (now - deviceLastUpdate[id] > DEVICE_TIMEOUT) {
+
+        const box = document.getElementById(id);
+        if (box) {
+          box.classList.remove("UP");
+          box.classList.add("DOWN");
+        }
+      }
+    });
+    updateCounters();
+  }, 5000);
+}
+
+
+function updateCounters() {
+  const page = pages[currentPage];
+  const boxes = page.querySelectorAll(".machine-box");
+
+  let up = 0;
+  let down = 0;
+
+  boxes.forEach(box => {
+    if (box.classList.contains("UP")) up++;
+    if (box.classList.contains("DOWN")) down++;
+  });
+
+  document.getElementById("countUp").textContent = up;
+  document.getElementById("countDown").textContent = down;
+}
+
+function attachMachineClickEvents() {
+
+  document.querySelectorAll(".machine-box").forEach(box => {
+
+    box.addEventListener("click", () => {
+      stopAutoSlide();
+
+      const id = box.id;
+      const name = box.querySelector(".name").textContent;
+
+      document.getElementById("modalTitle").textContent = name;
+
+      if (machineDetails[id]) {
+        document.getElementById("modalDescription").textContent =
+          machineDetails[id].description;
+
+        document.getElementById("modalImage").src =
+          machineDetails[id].image;
+      } else {
+        document.getElementById("modalDescription").textContent =
+          "No description available.";
+
+        document.getElementById("modalImage").src = "";
+      }
+
+      document.getElementById("machineModal").style.display = "flex";
+    });
+
+  });
+}
+
+function closeModal() {
+  document.getElementById("machineModal").style.display = "none";
+  startAutoSlide();
+}
+
+// init
+initAllWebSockets();
+updateSlide();
+startAutoSlide();
+startDeviceWatcher();
+attachMachineClickEvents();
+
+</script>
+</body>
+</html>
