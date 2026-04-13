@@ -189,6 +189,52 @@ header {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+.page.server-down::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 18, 0.85);
+  backdrop-filter: blur(1px);
+  z-index: 20;
+}
+
+.page.server-down::after {
+  content: "SERVER DOWN";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  color: #ff1744;
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-align: center;
+
+  text-shadow: 
+    0 0 10px rgba(255, 23, 68, 0.8),
+    0 0 20px rgba(255, 23, 68, 0.6);
+
+  z-index: 21;
+  animation: blinkServer 1.5s infinite;
+}
+
+/* efek kedip */
+@keyframes blinkServer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* background tetap kelihatan tapi blur */
+.page.server-down .wrapper {
+  filter: blur(1px) brightness(0.9);
+}
+
+/* disable interaction saat down */
+.page.server-down * {
+  pointer-events: none;
+}
 </style>
 </head>
 
@@ -218,7 +264,7 @@ header {
         <img src="maka-bg.png">
 
         <!-- Conveyor -->
-        <div id="CONVEYOR" class="machine-box UP"
+        <div id="CONVEYOR" class="machine-box DOWN"
           style="top:190px; left:1200px;">
           <div class="top">
             <div class="name">CONVEYOR</div>
@@ -231,7 +277,7 @@ header {
         </div>
 
         <!-- Main Assy Nutrunner Machines -->
-        <div id="NR_MA_02" class="machine-box UP"
+        <div id="NR_MA_02" class="machine-box DOWN"
           style="top:800px; left:600px;">
           <div class="top">
             <div class="name">Nutrunner MA-02</div>
@@ -242,7 +288,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="NR_MA_03" class="machine-box UP"
+        <div id="NR_MA_03" class="machine-box DOWN"
           style="top:720px; left:720px;">
           <div class="top">
             <div class="name">Nutrunner MA-03</div>
@@ -253,7 +299,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="NR_MA_04" class="machine-box UP"
+        <div id="NR_MA_04" class="machine-box DOWN"
           style="top:640px; left:840px;">
           <div class="top">
             <div class="name">Nutrunner MA-04</div>
@@ -264,7 +310,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="NR_MA_05_RH" class="machine-box UP"
+        <div id="NR_MA_05_RH" class="machine-box DOWN"
           style="top:560px; left:960px;">
           <div class="top">
             <div class="name">Nutrunner MA-05-RH</div>
@@ -275,7 +321,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="NR_MA_05_LH" class="machine-box UP"
+        <div id="NR_MA_05_LH" class="machine-box DOWN"
           style="top:440px; left:830px; transform: rotate(-34deg);">
           <div class="top">
             <div class="name">Nutrunner MA-05-LH</div>
@@ -288,7 +334,7 @@ header {
         </div>
 
         <!-- SA-03-04 -->
-        <div id="NR_SA_03_04" class="machine-box UP"
+        <div id="NR_SA_03_04" class="machine-box DOWN"
           style="top:270px; left:585px; transform: rotate(-34deg);">
           <div class="top">
             <div class="name">Nutrunner SA-03-04</div>
@@ -299,7 +345,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="Tire_Inflator" class="machine-box UP"
+        <div id="Tire_Inflator" class="machine-box DOWN"
           style="top:180px; left:510px; transform: rotate(-34deg) scale(0.9); ">
           <div class="top">
             <div class="name">Tire Inflator</div>
@@ -312,7 +358,7 @@ header {
         </div>
 
         <!-- SA-04 -->
-        <div id="Tohnichi" class="machine-box UP"
+        <div id="Tohnichi" class="machine-box DOWN"
           style="top:85px; left:700px; transform: rotate(35deg) scale(0.8); ">
           <div class="top">
             <div class="name">Tohnichi</div>
@@ -325,7 +371,7 @@ header {
         </div>
 
         <!-- SA-01 -->
-        <div id="SA_01_VIN" class="machine-box UP"
+        <div id="SA_01_VIN" class="machine-box DOWN"
           style="top:330px; left:275px; transform: rotate(-34deg) scale(0.8); ">
           <div class="top">
             <div class="name">SA-01 VIN</div>
@@ -338,7 +384,7 @@ header {
         </div>
 
         <!-- SA-08 -->
-        <div id="NR_SA_08" class="machine-box UP"
+        <div id="NR_SA_08" class="machine-box DOWN"
           style="top:430px; left:130px; transform: rotate(-34deg) scale(0.8); ">
           <div class="top">
             <div class="name">Nutrunner SA-08</div>
@@ -359,7 +405,7 @@ header {
           data-title="Sugity Creative Plant1 Factory 2">
       <div class="wrapper">
         <img src="sugityp1f2-bg.png">
-        <div id="IOT_NODE_001" class="machine-box UP"
+        <div id="IOT_NODE_001" class="machine-box DOWN"
           style="top:405px; left:180px;">
           <div class="top">
             <div class="name">IOT NODE 001</div>
@@ -370,7 +416,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="Printer_M_5" class="machine-box UP"
+        <div id="Printer_M_5" class="machine-box DOWN"
           style="top:340px; left:180px;">
           <div class="top">
             <div class="name">Printer M#5</div>
@@ -391,7 +437,7 @@ header {
           data-title="Sugity Creative Plant1 Factory 4">
       <div class="wrapper">
         <img src="sugityp1f4-bg.png">
-        <div id="DCS_MIXING_MATERIAL_F4" class="machine-box UP"
+        <div id="DCS_MIXING_MATERIAL_F4" class="machine-box DOWN"
           style="top:600px; left:380px;">
           <div class="top">
             <div class="name">DCS Mixing Material</div>
@@ -402,7 +448,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="DCS_PLAYMAKER_F4" class="machine-box UP"
+        <div id="DCS_PLAYMAKER_F4" class="machine-box DOWN"
           style="top:380px; left:370px;">
           <div class="top">
             <div class="name">DCS Playmaker</div>
@@ -413,7 +459,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="DCS_QI_F4" class="machine-box UP"
+        <div id="DCS_QI_F4" class="machine-box DOWN"
           style="top:230px; left:370px;">
           <div class="top">
             <div class="name">DCS QI</div>
@@ -424,7 +470,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="DCS_REPAIR_IN_LINE_F4" class="machine-box UP"
+        <div id="DCS_REPAIR_IN_LINE_F4" class="machine-box DOWN"
           style="top:120px; left:690px;">
           <div class="top">
             <div class="name">DCS Repair In Line</div>
@@ -435,7 +481,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="DCS_POLES_F4" class="machine-box UP"
+        <div id="DCS_POLES_F4" class="machine-box DOWN"
           style="top:160px; left:1050px;">
           <div class="top">
             <div class="name">DCS Poles</div>
@@ -457,7 +503,7 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
-        <div id="DCS_TASK_FORCE_F4" class="machine-box UP"
+        <div id="DCS_TASK_FORCE_F4" class="machine-box DOWN"
           style="top:300px; left:1050px;">
           <div class="top">
             <div class="name">DCS Task Force</div>
@@ -501,6 +547,8 @@ const wsConnections = {};
 const RECONNECT_DELAY = 3000;
 const DEVICE_TIMEOUT = 15000; // 15 detik
 const deviceLastUpdate = {};
+const serverLastUpdate = {};
+const SERVER_TIMEOUT = 15000; // 15 detik
 const wrapper = document.getElementById("pageWrapper");
 const pages = document.querySelectorAll(".page");
 const header = document.getElementById("mainHeader");
@@ -510,18 +558,109 @@ let ws = null;
 const machineDetails = {
 
   CONVEYOR: {
-    description: "Main conveyor line for unit transfer.",
-    image: "maka-bg.png"
+    description: "Main conveyor system used for transferring units between stations in the assembly line. Ensures continuous production flow.",
+    image: "unknown.png"
   },
+
+  IOT_NODE_001: {
+    description: "IoT data acquisition node used to collect and transmit machine status and sensor data to the central monitoring system.",
+    image: "iotnode001.jpeg"
+  },
+
+  Printer_M_5: {
+    description: "Industrial printer used for marking, labeling, or identification on production units at Factory 2 line.",
+    image: "printerf2m5.jpeg"
+  },
+
+  // ================= MA STATIONS =================
 
   NR_MA_02: {
-    description: "Nutrunner station MA-02 used for bolt tightening.",
-    image: "maka-bg.png"
+    description: "Nutrunner station MA-02 used for tightening bolts with controlled torque in the main assembly process.",
+    image: "unknown.png"
   },
 
+  NR_MA_03: {
+    description: "Nutrunner station MA-03 responsible for precise torque application on critical assembly points.",
+    image: "unknown.png"
+  },
+
+  NR_MA_04: {
+    description: "Nutrunner station MA-04 used for fastening components with torque monitoring and quality control.",
+    image: "unknown.png"
+  },
+
+  NR_MA_05_RH: {
+    description: "Nutrunner MA-05 Right Hand station used for tightening bolts on the right side of the unit.",
+    image: "unknown.png"
+  },
+
+  NR_MA_05_LH: {
+    description: "Nutrunner MA-05 Left Hand station used for tightening bolts on the left side of the unit.",
+    image: "unknown.png"
+  },
+
+  // ================= SA STATIONS =================
+
+  NR_SA_03_04: {
+    description: "Nutrunner station SA-03-04 used in sub-assembly process for fastening components before main assembly.",
+    image: "unknown.png"
+  },
+
+  NR_SA_08: {
+    description: "Nutrunner station SA-08 used for final tightening process in sub-assembly line.",
+    image: "unknown.png"
+  },
+
+  SA_01_VIN: {
+    description: "VIN marking station used to assign and verify Vehicle Identification Number during assembly process.",
+    image: "unknown.png"
+  },
+
+  Tire_Inflator: {
+    description: "Automated tire inflator system used to fill tires to specified pressure standards before final inspection.",
+    image: "unknown.png"
+  },
+
+  Tohnichi: {
+    description: "Torque verification tool (Tohnichi) used for manual or semi-automatic torque validation and calibration.",
+    image: "unknown.png"
+  },
+
+  // ================= DCS SYSTEM =================
+
   DCS_MIXING_MATERIAL_F4: {
-    description: "DCS Mixing Material system at Factory 4.",
-    image: "maka-bg.png"
+    description: "DCS Mixing Material system used to control and monitor material mixing processes in Factory 4.",
+    image: "unknown.png"
+  },
+
+  DCS_PLAYMAKER_F4: {
+    description: "DCS Playmaker system responsible for coordinating production flow and managing process logic in Factory 4.",
+    image: "unknown.png"
+  },
+
+  DCS_QI_F4: {
+    description: "DCS Quality Inspection (QI) system used to validate product quality and ensure compliance with production standards.",
+    image: "unknown.png"
+  },
+
+  DCS_REPAIR_IN_LINE_F4: {
+    description: "Repair In-Line system used to fix detected defects directly within the production line without stopping flow.",
+    image: "unknown.png"
+  },
+
+  DCS_REPAIR_OUT_LINE_F4: {
+    description: "Repair Out-Line system used for handling defective units outside the main production flow.",
+    image: "unknown.png"
+  },
+
+  DCS_POLES_F4: {
+    description: "DCS Poles system used for handling pole-related processes or structures in Factory 4 production.",
+    image: "unknown.png"
+  },
+
+  DCS_TASK_FORCE_F4: {
+    description: "DCS Task Force system used for handling special operations, troubleshooting, or manual interventions in production.",
+    image: "unknown.png"
   }
 
 };
@@ -586,28 +725,40 @@ function stopAutoSlide() {
 
 /* ===== WEBSOCKET ===== */
 function initAllWebSockets() {
-  pages.forEach((page, index) => {
+  const connected = {};
+
+  pages.forEach((page) => {
     const server = page.dataset.server;
     const port = page.dataset.port;
     const key = server + ":" + port;
+
+    if (connected[key]) return;
+    connected[key] = true;
+
     function connect() {
       const socket = new WebSocket(`ws://${server}:${port}`);
       wsConnections[key] = socket;
+
       socket.onerror = () => {
         socket.close();
       };
+
+      socket.onclose = () => {
+        serverLastUpdate[key] = 0; // tandai down
+        setTimeout(connect, RECONNECT_DELAY);
+      };
+
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (!data.devices) return;
-        // Cari semua page yang pakai server ini
+        serverLastUpdate[key] = Date.now();
         pages.forEach((pageElement) => {
           if (
             pageElement.dataset.server === server &&
             pageElement.dataset.port === port
           ) {
             data.devices.forEach(dev => {
-              const id = dev.name
-                .replace(/[^a-zA-Z0-9]/g, "_");
+              const id = dev.name.replace(/[^a-zA-Z0-9]/g, "_");
               const box = pageElement.querySelector("#" + id);
               if (!box) return;
               box.classList.remove("UP","DOWN");
@@ -691,6 +842,25 @@ function attachMachineClickEvents() {
   });
 }
 
+function startServerWatcher() {
+  setInterval(() => {
+    const now = Date.now();
+
+    pages.forEach((page) => {
+      const server = page.dataset.server;
+      const port = page.dataset.port;
+      const key = server + ":" + port;
+
+      if (!serverLastUpdate[key] || (now - serverLastUpdate[key] > SERVER_TIMEOUT)) {
+        page.classList.add("server-down");
+      } else {
+        page.classList.remove("server-down");
+      }
+    });
+
+  }, 5000);
+}
+
 function closeModal() {
   document.getElementById("machineModal").style.display = "none";
   startAutoSlide();
@@ -701,6 +871,7 @@ initAllWebSockets();
 updateSlide();
 startAutoSlide();
 startDeviceWatcher();
+startServerWatcher();
 attachMachineClickEvents();
 
 </script>
