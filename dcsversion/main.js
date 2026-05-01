@@ -1,7 +1,11 @@
-const { app, BrowserWindow, globalShortcut } = require("electron");
+const { app, BrowserWindow, globalShortcut, ipcMain } = require("electron");
 const path = require("path");
 
 let mainWindow;
+
+ipcMain.on("app-quit", () => {
+  app.quit();
+});
 
 function createWindow() {
 
@@ -12,7 +16,8 @@ function createWindow() {
     autoHideMenuBar: true,
     frame: false, // hilangkan border window
     webPreferences: {
-      contextIsolation: true
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js")
     }
   });
 

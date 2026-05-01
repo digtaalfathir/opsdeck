@@ -953,13 +953,9 @@ document.addEventListener("click", function(e) {
 });
 
 function logout() {
-  alert("Logout clicked!");
-
-  // contoh redirect (kalau ada login page)
-  // window.location.href = "/login";
-
-  // atau reload
-  // location.reload();
+  if (confirm("Keluar dari aplikasi?")) {
+    window.electronAPI.quitApp();
+  }
 }
 
 function closeModal() {
