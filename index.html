@@ -38,6 +38,7 @@ header {
 .page {
   min-width: 100vw;
   padding: 30px 0;
+  position: relative;
 }
 
 /* ================= WRAPPER ================= */
@@ -228,7 +229,7 @@ header {
 
 /* background tetap kelihatan tapi blur */
 .page.server-down .wrapper {
-  filter: blur(1px) brightness(0.9);
+  /* filter: blur(1px) brightness(0.9); */
 }
 
 /* disable interaction saat down */
@@ -514,6 +515,17 @@ header {
             <div class="ip">-</div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- PAGE 4 -->
+    <section class="page"
+          data-server="10.10.1.223"
+          data-port="10011"
+          data-title="JMP">
+      <div class="wrapper">
+        <img src="jmp-bg.png">
+
       </div>
     </section>
 
@@ -850,6 +862,8 @@ function startServerWatcher() {
       const server = page.dataset.server;
       const port = page.dataset.port;
       const key = server + ":" + port;
+
+      console.log(`Checking server ${key} - last update: ${serverLastUpdate[key]}`);
 
       if (!serverLastUpdate[key] || (now - serverLastUpdate[key] > SERVER_TIMEOUT)) {
         page.classList.add("server-down");
