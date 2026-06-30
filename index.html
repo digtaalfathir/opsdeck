@@ -861,6 +861,8 @@ function startDeviceWatcher() {
         if (box) {
           box.classList.remove("UP");
           box.classList.add("DOWN");
+          const v = box.querySelector(".value");
+          if (v) v.textContent = "Offline";
         }
       }
     });
@@ -925,8 +927,6 @@ function startServerWatcher() {
       const port = page.dataset.port;
       const key = server + ":" + port;
 
-      console.log(`Checking server ${key} - last update: ${serverLastUpdate[key]}`);
-
       if (!serverLastUpdate[key] || (now - serverLastUpdate[key] > SERVER_TIMEOUT)) {
         page.classList.add("server-down");
       } else {
@@ -950,6 +950,18 @@ document.addEventListener("click", function(e) {
   if (!title.contains(e.target) && !menu.contains(e.target)) {
     menu.classList.remove("show");
   }
+});
+
+// navigasi slider pakai panah kiri/kanan (skip kalau lagi ngetik / ada modal/panel kebuka)
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const tag = (document.activeElement && document.activeElement.tagName) || "";
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  const overlayOpen = [...document.querySelectorAll(".modal, .rc-modal, .remote-panel")]
+    .some((el) => getComputedStyle(el).display !== "none");
+  if (overlayOpen) return;
+  if (e.key === "ArrowLeft") prevPage();
+  else nextPage();
 });
 
 function logout() {
