@@ -1131,6 +1131,16 @@ const machineDetails = {
   DCS_TASK_FORCE_F4: {
     description: "DCS Task Force system used for handling special operations, troubleshooting, or manual interventions in production.",
     image: "unknown.png"
+  },
+
+  GATE_INBOUND_JMP: {
+    description: "Inbound gate system at JMP used for monitoring and controlling the entry of materials or products into the facility.",
+    image: "unknown.png"
+  },
+
+  GATE_OUTBOUND_JMP: {
+    description: "Outbound gate system at JMP used for monitoring and controlling the exit of materials or products from the facility.",
+    image: "unknown.png"
   }
 
 };
@@ -1772,12 +1782,6 @@ function initTheme() {
   applyTheme(t);
 }
 
-/* ===== BATCH 3: helper overlay (modal/panel kebuka?) ===== */
-function anyOverlayOpen() {
-  return [...document.querySelectorAll(".modal, .rc-modal, .remote-panel")]
-    .some((el) => getComputedStyle(el).display !== "none");
-}
-
 /* ===== BATCH 2: indikator halaman, progress auto-slide, status live ===== */
 function buildPageIndicator() {
   const dots = document.getElementById("pgDots");
@@ -1839,13 +1843,6 @@ startServerWatcher();
 attachMachineClickEvents();
 updateLiveStatus();
 setInterval(updateLiveStatus, 3000);
-
-// v2 batch3: pause auto-slide saat mouse di area konten, lanjut lagi saat keluar
-const pagesEl = document.querySelector(".pages");
-if (pagesEl) {
-  pagesEl.addEventListener("mouseenter", () => { if (!editMode) stopAutoSlide(); });
-  pagesEl.addEventListener("mouseleave", () => { if (!editMode && !anyOverlayOpen()) startAutoSlide(); });
-}
 
 // v2: simpan posisi awal HTML (buat Reset) lalu terapkan layout tersimpan
 document.querySelectorAll(".machine-box").forEach((box) => {
