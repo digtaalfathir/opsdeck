@@ -310,6 +310,8 @@ header {
   width: 100%;
 }
 .remote-btn:hover { filter: brightness(1.08); }
+.remote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.remote-btn:disabled:hover { filter: none; }
 
 .remote-panel {
   position: fixed;
@@ -755,6 +757,9 @@ header {
     <div id="remoteActions" style="display:none; margin-top:16px;">
       <button id="btnRemoteVnc" class="remote-btn">🖥️ Remote Desktop (VNC)</button>
       <button id="btnRemoteSsh" class="remote-btn ssh" style="margin-top:10px;">⌨️ SSH Terminal</button>
+      <div id="remoteOfflineNote" style="display:none; margin-top:10px; color:#ff8a9b; font-size:12px;">
+        ⚠ Mesin sedang OFFLINE — remote tidak tersedia.
+      </div>
     </div>
 
   </div>
@@ -1119,16 +1124,29 @@ function attachMachineClickEvents() {
       const remoteActions = document.getElementById("remoteActions");
       const btnVnc = document.getElementById("btnRemoteVnc");
       const btnSsh = document.getElementById("btnRemoteSsh");
+      const offlineNote = document.getElementById("remoteOfflineNote");
       if (window.remotableIds && window.remotableIds.has(id)) {
         remoteActions.style.display = "block";
-        btnVnc.onclick = () => {
-          closeModal();
-          window.openRemoteDesktop(id, ip, name);
-        };
-        btnSsh.onclick = () => {
-          closeModal();
-          openSshTerminal(id, ip, name);
-        };
+
+        // Hanya boleh remote kalau status mesin UP. Kalau DOWN/offline -> disable.
+        const isUp = box.classList.contains("UP");
+        btnVnc.disabled = !isUp;
+        btnSsh.disabled = !isUp;
+        offlineNote.style.display = isUp ? "none" : "block";
+
+        if (isUp) {
+          btnVnc.onclick = () => {
+            closeModal();
+            window.openRemoteDesktop(id, ip, name);
+          };
+          btnSsh.onclick = () => {
+            closeModal();
+            openSshTerminal(id, ip, name);
+          };
+        } else {
+          btnVnc.onclick = null;
+          btnSsh.onclick = null;
+        }
       } else {
         remoteActions.style.display = "none";
       }
@@ -1325,6 +1343,11 @@ function setSshStatus(t) {
 }
 
 async function openSshTerminal(id, host, name) {
+  const mbox = document.getElementById(id);
+  if (mbox && !mbox.classList.contains("UP")) {
+    alert("Mesin sedang OFFLINE — remote dibatalkan.");
+    return;
+  }
   const panel = document.getElementById("sshPanel");
   document.getElementById("sshTitle").textContent = "SSH — " + (name || id);
   setSshStatus("Menghubungkan…");
@@ -1424,6 +1447,11 @@ attachMachineClickEvents();
   }
 
   window.openRemoteDesktop = async function (id, host, name) {
+    const mbox = document.getElementById(id);
+    if (mbox && !mbox.classList.contains("UP")) {
+      alert("Mesin sedang OFFLINE — remote dibatalkan.");
+      return;
+    }
     const panel = document.getElementById("remotePanel");
     document.getElementById("remoteTitle").textContent = "Remote Desktop — " + (name || id);
     setStatus("Menghubungkan (SSH → x11vnc)…");
