@@ -39,4 +39,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
       return () => ipcRenderer.removeListener("ssh:exit", h);
     },
   },
+  // Edit Layout: simpan/baca posisi kotak ke layout.json.
+  layout: {
+    load: () => ipcRenderer.invoke("layout:load"),
+    save: (data) => ipcRenderer.invoke("layout:save", data),
+  },
 });

@@ -313,6 +313,28 @@ header {
 .remote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .remote-btn:disabled:hover { filter: none; }
 
+/* ---- Edit Layout ---- */
+body.edit-layout .machine-box { cursor: move; outline: 1px dashed rgba(0,230,118,.7); }
+body.edit-layout .machine-box.selected {
+  outline: 2px solid #00e676;
+  box-shadow: 0 0 0 4px rgba(0,230,118,.25);
+}
+.edit-toolbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: 14px;
+  background: #141821; color: #fff; padding: 10px 18px;
+  z-index: 100002; box-shadow: 0 -6px 20px rgba(0,0,0,.4);
+  font-size: 14px;
+}
+.edit-title { font-weight: 600; color: #00e676; }
+.edit-info { font-size: 12px; color: #9fb0c7; }
+.edit-btn {
+  background: #2a3140; color: #fff; border: none;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;
+}
+.edit-btn:hover { background: #384258; }
+.edit-btn.primary { background: #00e676; color: #06210f; font-weight: 600; }
+
 .remote-panel {
   position: fixed;
   inset: 0;
@@ -445,6 +467,7 @@ header {
     </span>
 
     <div id="dropdownMenu" class="dropdown-menu">
+      <div class="menu-item" onclick="toggleEditMode()">Edit Layout</div>
       <div class="menu-item" onclick="openRemoteConfig()">Kelola Remote</div>
       <div class="menu-item" onclick="logout()">Keluar</div>
     </div>
@@ -820,6 +843,16 @@ header {
   </div>
 </div>
 
+<!-- ================= EDIT LAYOUT TOOLBAR (v2) ================= -->
+<div id="editToolbar" class="edit-toolbar" style="display:none;">
+  <span class="edit-title">✏️ Edit Layout</span>
+  <span id="editInfo" class="edit-info">Drag kotak…</span>
+  <span style="flex:1"></span>
+  <button class="edit-btn" onclick="resetLayout()">Reset</button>
+  <button class="edit-btn primary" onclick="saveLayout()">Simpan</button>
+  <button class="edit-btn" onclick="exitEditMode()">Selesai</button>
+</div>
+
 <script>
 
 let currentPage = 0;
@@ -1100,6 +1133,7 @@ function attachMachineClickEvents() {
   document.querySelectorAll(".machine-box").forEach(box => {
 
     box.addEventListener("click", () => {
+      if (editMode) return;
       stopAutoSlide();
 
       const id = box.id;
@@ -1155,6 +1189,8 @@ function attachMachineClickEvents() {
       document.getElementById("machineModal").style.display = "flex";
     });
 
+    box.addEventListener("mousedown", (e) => startBoxDrag(e, box));
+
   });
 }
 
@@ -1195,6 +1231,7 @@ document.addEventListener("click", function(e) {
 // navigasi slider pakai panah kiri/kanan (skip kalau lagi ngetik / ada modal/panel kebuka)
 document.addEventListener("keydown", function (e) {
   if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  if (editMode) return;
   const tag = (document.activeElement && document.activeElement.tagName) || "";
   if (tag === "INPUT" || tag === "TEXTAREA") return;
   const overlayOpen = [...document.querySelectorAll(".modal, .rc-modal, .remote-panel")]
@@ -1426,6 +1463,127 @@ async function closeSshTerminal() {
   if (window.startAutoSlide) window.startAutoSlide();
 }
 
+/* ===== EDIT LAYOUT (v2) ===== */
+let editMode = false;
+let selectedBox = null;
+let _dragStartX = 0, _dragStartY = 0, _boxStartLeft = 0, _boxStartTop = 0;
+
+function setEditInfo(txt) {
+  const el = document.getElementById("editInfo");
+  if (el) el.textContent = txt;
+}
+
+function toggleEditMode() {
+  document.getElementById("dropdownMenu").classList.remove("show");
+  if (editMode) exitEditMode();
+  else enterEditMode();
+}
+
+function enterEditMode() {
+  editMode = true;
+  stopAutoSlide();
+  document.body.classList.add("edit-layout");
+  document.getElementById("editToolbar").style.display = "flex";
+  setEditInfo("Drag kotak ke posisinya. Panah = geser 1px (Shift = 10px). Pindah halaman pakai panah di layar.");
+}
+
+function exitEditMode() {
+  editMode = false;
+  document.body.classList.remove("edit-layout");
+  document.getElementById("editToolbar").style.display = "none";
+  if (selectedBox) selectedBox.classList.remove("selected");
+  selectedBox = null;
+  startAutoSlide();
+}
+
+function selectBox(box) {
+  if (selectedBox) selectedBox.classList.remove("selected");
+  selectedBox = box;
+  box.classList.add("selected");
+}
+
+function startBoxDrag(e, box) {
+  if (!editMode) return;
+  e.preventDefault();
+  selectBox(box);
+  _dragStartX = e.clientX;
+  _dragStartY = e.clientY;
+  _boxStartLeft = parseFloat(box.style.left) || 0;
+  _boxStartTop = parseFloat(box.style.top) || 0;
+  document.addEventListener("mousemove", onBoxDragMove);
+  document.addEventListener("mouseup", onBoxDragEnd);
+}
+
+function onBoxDragMove(e) {
+  if (!selectedBox) return;
+  const nl = Math.round(_boxStartLeft + (e.clientX - _dragStartX));
+  const nt = Math.round(_boxStartTop + (e.clientY - _dragStartY));
+  selectedBox.style.left = nl + "px";
+  selectedBox.style.top = nt + "px";
+  setEditInfo(`${selectedBox.id} → left:${nl}px  top:${nt}px`);
+}
+
+function onBoxDragEnd() {
+  document.removeEventListener("mousemove", onBoxDragMove);
+  document.removeEventListener("mouseup", onBoxDragEnd);
+}
+
+// nudge pakai panah saat edit mode (kotak terpilih)
+document.addEventListener("keydown", function (e) {
+  if (!editMode || !selectedBox) return;
+  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+  e.preventDefault();
+  const step = e.shiftKey ? 10 : 1;
+  let l = parseFloat(selectedBox.style.left) || 0;
+  let t = parseFloat(selectedBox.style.top) || 0;
+  if (e.key === "ArrowLeft") l -= step;
+  else if (e.key === "ArrowRight") l += step;
+  else if (e.key === "ArrowUp") t -= step;
+  else t += step;
+  selectedBox.style.left = l + "px";
+  selectedBox.style.top = t + "px";
+  setEditInfo(`${selectedBox.id} → left:${l}px  top:${t}px`);
+});
+
+async function applyLayout() {
+  try {
+    const layout = await window.electronAPI.layout.load();
+    if (!layout) return;
+    Object.keys(layout).forEach((id) => {
+      const box = document.getElementById(id);
+      if (!box || !layout[id]) return;
+      if (typeof layout[id].left === "number") box.style.left = layout[id].left + "px";
+      if (typeof layout[id].top === "number") box.style.top = layout[id].top + "px";
+    });
+  } catch (e) {
+    /* abaikan — fallback ke posisi di HTML */
+  }
+}
+
+async function saveLayout() {
+  const layout = {};
+  document.querySelectorAll(".machine-box").forEach((box) => {
+    layout[box.id] = {
+      left: Math.round(parseFloat(box.style.left) || 0),
+      top: Math.round(parseFloat(box.style.top) || 0),
+    };
+  });
+  try {
+    await window.electronAPI.layout.save(layout);
+    setEditInfo("Tersimpan ✓ (" + Object.keys(layout).length + " kotak)");
+  } catch (e) {
+    setEditInfo("Gagal simpan: " + (e && e.message ? e.message : e));
+  }
+}
+
+function resetLayout() {
+  document.querySelectorAll(".machine-box").forEach((box) => {
+    if (box.dataset.origLeft !== undefined) box.style.left = box.dataset.origLeft;
+    if (box.dataset.origTop !== undefined) box.style.top = box.dataset.origTop;
+  });
+  setEditInfo("Direset ke posisi awal HTML. Klik Simpan untuk permanen.");
+}
+
 // init
 initAllWebSockets();
 updateSlide();
@@ -1433,6 +1591,13 @@ startAutoSlide();
 startDeviceWatcher();
 startServerWatcher();
 attachMachineClickEvents();
+
+// v2: simpan posisi awal HTML (buat Reset) lalu terapkan layout tersimpan
+document.querySelectorAll(".machine-box").forEach((box) => {
+  box.dataset.origLeft = box.style.left;
+  box.dataset.origTop = box.style.top;
+});
+applyLayout();
 
 </script>
 

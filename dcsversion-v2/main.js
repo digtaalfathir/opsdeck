@@ -104,6 +104,16 @@ ipcMain.handle("remote:get-config", () => secureConfig.getRedactedConfig());
 // Simpan config dari UI (password baru dienkripsi via safeStorage).
 ipcMain.handle("remote:save-config", (_event, editable) => secureConfig.saveConfig(editable));
 
+// ---------------- IPC: layout posisi kotak ----------------
+const LAYOUT_PATH = path.join(__dirname, "layout.json");
+ipcMain.handle("layout:load", () => {
+  try { return JSON.parse(fs.readFileSync(LAYOUT_PATH, "utf8")); } catch (_) { return null; }
+});
+ipcMain.handle("layout:save", (_event, data) => {
+  fs.writeFileSync(LAYOUT_PATH, JSON.stringify(data, null, 2));
+  return { ok: true };
+});
+
 // ---------------- IPC: SSH terminal ----------------
 ipcMain.handle("ssh:start", async (event, { id, fallbackHost, cols, rows }) => {
   // tutup shell lama untuk id yang sama (kalau ada)
