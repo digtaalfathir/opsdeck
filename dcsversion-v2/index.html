@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stechoq Hardware Monitoring</title>
+
+<!-- xterm.js (v2, untuk SSH terminal) -->
+<link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css">
+<script src="./node_modules/@xterm/xterm/lib/xterm.js"></script>
+<script src="./node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+
+<style>
+
+/* ================= GLOBAL ================= */
+html, body {
+  height: 100%;
+  overflow: hidden;  /* 🔥 ini yang bikin fullscreen beneran */
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #ffffff;
+  height: 100%;
+  /* cursor: none; */
+}
+
+header {
+  background: linear-gradient(90deg,#141821,#1c212b);
+  padding: 15px 40px;
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+}
+
+/* ================= SLIDER ================= */
+
+.pages {
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+.page-wrapper {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+
+.page {
+  min-width: 100vw;
+  padding: 0;            
+  position: relative;
+  height: 100vh;
+  overflow: hidden;    
+}
+
+/* ================= WRAPPER ================= */
+
+.wrapper {
+  position: relative;
+  width: 1400px;
+  margin: 0 auto;
+  padding: 30px 0;
+}
+
+.wrapper img {
+  width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 25px 60px #ffffff;
+}
+
+/* ================= MACHINE ================= */
+
+.machine-box {
+  position: absolute;
+  width: 150px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15,18,25,0.85);
+  color: white;
+  font-size: 12px;
+  transition: 0.25s;
+}
+
+.machine-box:hover {
+  transform: translateY(-6px);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.bottom {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.UP { border-left: 4px solid #00e676; }
+.UP .status-dot { background:#00e676; }
+
+.DOWN { border-left: 4px solid #ff1744; }
+.DOWN .status-dot {
+  background:#ff1744;
+  animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.4; }
+}
+
+/* ================= ARROWS ================= */
+
+.arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: rgba(20,25,35,0.85);
+  color: white;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: 0.2s;
+  z-index: 999;
+}
+
+.arrow:hover {
+  background: #00e676;
+}
+
+.arrow.left { left: 20px; }
+.arrow.right { right: 20px; }
+
+.indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.indicator.up {
+  background: #00e676;
+}
+
+.indicator.down {
+  background: #ff1744;
+}
+
+/* ================= MODAL ================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #1c212b;
+  color: white;
+  width: 600px;
+  max-width: 90%;
+  padding: 30px;
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content img {
+  width: 100%;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.page.server-down::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 18, 0.85);
+  backdrop-filter: blur(1px);
+  z-index: 20;
+}
+
+.page.server-down::after {
+  content: "SERVER DOWN";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  color: #ff1744;
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-align: center;
+
+  text-shadow: 
+    0 0 10px rgba(255, 23, 68, 0.8),
+    0 0 20px rgba(255, 23, 68, 0.6);
+
+  z-index: 21;
+  animation: blinkServer 1.5s infinite;
+}
+
+/* efek kedip */
+@keyframes blinkServer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* background tetap kelihatan tapi blur */
+.page.server-down .wrapper {
+  /* filter: blur(1px) brightness(0.9); */
+}
+
+/* disable interaction saat down */
+.page.server-down * {
+  pointer-events: none;
+}
+
+/* ================= HEADER DROPDOWN ================= */
+
+.header-menu {
+  position: relative;
+  display: inline-block;
+}
+
+#titleText {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background: #1c212b;
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 150px;
+  display: none;
+  z-index: 9999;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: 0.2s;
+}
+
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menu-item {
+  padding: 10px 15px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menu-item:hover {
+  background: #00e676;
+  color: black;
+}
+
+/* ================= REMOTE (v2) ================= */
+
+.remote-btn {
+  background: #00e676;
+  color: #06210f;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+}
+.remote-btn:hover { filter: brightness(1.08); }
+
+.remote-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: #0b0e14;
+  display: none;
+  flex-direction: column;
+}
+
+.remote-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(90deg,#141821,#1c212b);
+  color: #fff;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.remote-status {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8fa3bf;
+}
+
+.remote-bar-btn {
+  background: #2a3140;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.remote-bar-btn:hover { background: #384258; }
+.remote-bar-btn.close:hover { background: #ff1744; }
+
+.vnc-screen {
+  flex: 1;
+  background: #000;
+  overflow: hidden;
+}
+
+.ssh-screen {
+  flex: 1;
+  background: #0b0e14;
+  padding: 6px 8px;
+  overflow: hidden;
+}
+.remote-btn.ssh { background: #4b9fff; color: #04111f; }
+
+/* ---- Kelola Remote modal ---- */
+.rc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.rc-content {
+  background: #1c212b;
+  color: #fff;
+  width: 760px;
+  max-width: 94%;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  padding: 24px;
+}
+.rc-head { display: flex; align-items: center; justify-content: space-between; }
+.rc-head h2 { margin: 0; font-size: 20px; }
+.rc-close { cursor: pointer; font-size: 22px; color: #8fa3bf; }
+.rc-close:hover { color: #fff; }
+.rc-content h3 {
+  margin: 22px 0 10px;
+  font-size: 12px;
+  color: #8fa3bf;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.rc-warn {
+  background: #3a2a10;
+  border: 1px solid #7a5a20;
+  color: #ffd591;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 14px;
+}
+.rc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; }
+.rc-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #9fb0c7;
+  gap: 4px;
+}
+.rc-grid input, .rc-add select {
+  background: #0f131b;
+  border: 1px solid #2a3140;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.rc-row { border: 1px solid #2a3140; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.rc-row-title { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; }
+.rc-row-title small { color: #6b7a90; font-weight: 400; }
+.rc-del { margin-left: auto; color: #ff6b81; cursor: pointer; font-size: 12px; font-weight: 400; }
+.rc-del:hover { text-decoration: underline; }
+.rc-add { display: flex; gap: 10px; margin-top: 8px; align-items: center; }
+.rc-add select { flex: 1; }
+.rc-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.rc-btn { border: none; border-radius: 9px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
+.rc-btn.primary { background: #00e676; color: #06210f; font-weight: 600; }
+.rc-btn.ghost { background: #2a3140; color: #fff; }
+.rc-btn:hover { filter: brightness(1.08); }
+</style>
+</head>
+
+<body>
+
+<header id="mainHeader">
+  <div class="header-menu">
+    <span id="titleText" onclick="toggleMenu()">
+      Stechoq Hardware Monitoring - Maka Motors
+    </span>
+
+    <div id="dropdownMenu" class="dropdown-menu">
+      <div class="menu-item" onclick="openRemoteConfig()">Kelola Remote</div>
+      <div class="menu-item" onclick="logout()">Keluar</div>
+    </div>
+  </div>
+  <span id="systemStatus" style="float:right; font-size:14px;">
+    <span class="indicator up"></span>
+    <span id="countUp">0</span>
+
+    <span class="indicator down" style="margin-left:15px;"></span>
+    <span id="countDown">0</span>
+  </span>
+</header>
+
+<div class="pages">
+  <div class="page-wrapper" id="pageWrapper">
+
+    <!-- PAGE 1 -->
+    <section class="page"
+             data-server="10.10.1.121"
+             data-port="10011"
+             data-title="Maka Motors">
+
+      <div class="wrapper">
+        <img src="maka-bg.png">
+
+        <!-- Conveyor -->
+        <div id="CONVEYOR" class="machine-box DOWN"
+          style="top:190px; left:1200px;">
+          <div class="top">
+            <div class="name">CONVEYOR</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- Main Assy Nutrunner Machines -->
+        <div id="NR_MA_02" class="machine-box DOWN"
+          style="top:800px; left:600px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-02</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_03" class="machine-box DOWN"
+          style="top:720px; left:720px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-03</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_04" class="machine-box DOWN"
+          style="top:640px; left:840px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-04</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_05_RH" class="machine-box DOWN"
+          style="top:560px; left:960px;">
+          <div class="top">
+            <div class="name">Nutrunner MA-05-RH</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="NR_MA_05_LH" class="machine-box DOWN"
+          style="top:440px; left:830px; transform: rotate(-34deg);">
+          <div class="top">
+            <div class="name">Nutrunner MA-05-LH</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-03-04 -->
+        <div id="NR_SA_03_04" class="machine-box DOWN"
+          style="top:270px; left:585px; transform: rotate(-34deg);">
+          <div class="top">
+            <div class="name">Nutrunner SA-03-04</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="Tire_Inflator" class="machine-box DOWN"
+          style="top:180px; left:510px; transform: rotate(-34deg) scale(0.9); ">
+          <div class="top">
+            <div class="name">Tire Inflator</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-04 -->
+        <div id="Tohnichi" class="machine-box DOWN"
+          style="top:85px; left:700px; transform: rotate(35deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">Tohnichi</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-01 -->
+        <div id="SA_01_VIN" class="machine-box DOWN"
+          style="top:330px; left:275px; transform: rotate(-34deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">SA-01 VIN</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+
+        <!-- SA-08 -->
+        <div id="NR_SA_08" class="machine-box DOWN"
+          style="top:430px; left:130px; transform: rotate(-34deg) scale(0.8); ">
+          <div class="top">
+            <div class="name">Nutrunner SA-08</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2 -->
+    <section class="page"
+          data-server="10.10.1.210"
+          data-port="10011"
+          data-title="Sugity Creative Plant1 Factory 2">
+      <div class="wrapper">
+        <img src="sugityp1f2-bg.png">
+        <div id="IOT_NODE_001" class="machine-box DOWN"
+          style="top:405px; left:180px;">
+          <div class="top">
+            <div class="name">IOT NODE 001</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="Printer_M_5" class="machine-box DOWN"
+          style="top:340px; left:180px;">
+          <div class="top">
+            <div class="name">Printer M#5</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 3 -->
+    <section class="page"
+          data-server="10.10.1.210"
+          data-port="10011"
+          data-title="Sugity Creative Plant1 Factory 4">
+      <div class="wrapper">
+        <img src="sugityp1f4-bg.png">
+        <div id="DCS_MIXING_MATERIAL_F4" class="machine-box DOWN"
+          style="top:600px; left:380px;">
+          <div class="top">
+            <div class="name">DCS Mixing Material</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_PLAYMAKER_F4" class="machine-box DOWN"
+          style="top:380px; left:370px;">
+          <div class="top">
+            <div class="name">DCS Playmaker</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_QI_F4" class="machine-box DOWN"
+          style="top:230px; left:370px;">
+          <div class="top">
+            <div class="name">DCS QI</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_REPAIR_IN_LINE_F4" class="machine-box DOWN"
+          style="top:120px; left:690px;">
+          <div class="top">
+            <div class="name">DCS Repair In Line</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_POLES_F4" class="machine-box DOWN"
+          style="top:160px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Poles</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_REPAIR_OUT_LINE_F4" class="machine-box DOWN"
+          style="top:230px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Repair Out Line</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_TASK_FORCE_F4" class="machine-box DOWN"
+          style="top:300px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Task Force</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 4 -->
+    <section class="page"
+          data-server="10.10.1.223"
+          data-port="10011"
+          data-title="JMP">
+      <div class="wrapper">
+        <img src="jmp-bg.png">
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="arrow left" onclick="prevPage()"><</div>
+<div class="arrow right" onclick="nextPage()">></div>
+
+<!-- ================= MODAL ================= -->
+<div id="machineModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">x</span>
+
+    <h2 id="modalTitle">Machine Name</h2>
+
+    <img id="modalImage" src="" alt="Machine Image">
+
+    <p id="modalDescription">
+      Deskripsi mesin akan muncul di sini.
+    </p>
+
+    <div id="remoteActions" style="display:none; margin-top:16px;">
+      <button id="btnRemoteVnc" class="remote-btn">🖥️ Remote Desktop (VNC)</button>
+      <button id="btnRemoteSsh" class="remote-btn ssh" style="margin-top:10px;">⌨️ SSH Terminal</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= REMOTE PANEL (v2) ================= -->
+<div id="remotePanel" class="remote-panel">
+  <div class="remote-bar">
+    <span id="remoteTitle">Remote Desktop</span>
+    <span id="remoteStatus" class="remote-status">…</span>
+    <span style="flex:1"></span>
+    <button id="btnRemoteFs" class="remote-bar-btn" title="Fullscreen layar remote">⤢ Layar penuh</button>
+    <button id="btnRemoteClose" class="remote-bar-btn close" onclick="closeRemoteDesktop()">✕ Tutup</button>
+  </div>
+  <div id="vncScreen" class="vnc-screen"></div>
+</div>
+
+<!-- ================= SSH TERMINAL PANEL (v2) ================= -->
+<div id="sshPanel" class="remote-panel">
+  <div class="remote-bar">
+    <span id="sshTitle">SSH</span>
+    <span id="sshStatus" class="remote-status">…</span>
+    <span style="flex:1"></span>
+    <button class="remote-bar-btn close" onclick="closeSshTerminal()">✕ Tutup</button>
+  </div>
+  <div id="sshScreen" class="ssh-screen"></div>
+</div>
+
+<!-- ================= KELOLA REMOTE (v2) ================= -->
+<div id="remoteConfigModal" class="rc-modal">
+  <div class="rc-content">
+    <div class="rc-head">
+      <h2>Kelola Remote</h2>
+      <span class="rc-close" onclick="closeRemoteConfig()">✕</span>
+    </div>
+
+    <div id="rcWarn" class="rc-warn" style="display:none;"></div>
+
+    <h3>Default (berlaku ke semua mesin)</h3>
+    <div class="rc-grid">
+      <label>Port <input id="rcDefPort" type="number" placeholder="65432"></label>
+      <label>Username <input id="rcDefUser" type="text" placeholder="stechoq"></label>
+      <label>Display VNC <input id="rcDefDisplay" type="text" placeholder=":0"></label>
+      <label>Password <input id="rcDefPass" type="password" placeholder="(kosongkan = tidak diubah)"></label>
+    </div>
+
+    <h3>Per Mesin</h3>
+    <div id="rcMachines"></div>
+
+    <div class="rc-add">
+      <select id="rcAddSelect"></select>
+      <button class="rc-btn ghost" onclick="rcAddMachine()">+ Tambah mesin</button>
+    </div>
+
+    <div class="rc-actions">
+      <button class="rc-btn ghost" onclick="closeRemoteConfig()">Batal</button>
+      <button class="rc-btn primary" onclick="rcSave()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+let currentPage = 0;
+let autoSlideTimer = null;
+const AUTO_SLIDE_DELAY = 10000; // 10 detik
+const wsConnections = {};
+const RECONNECT_DELAY = 3000;
+const DEVICE_TIMEOUT = 15000; // 15 detik
+const deviceLastUpdate = {};
+const serverLastUpdate = {};
+const SERVER_TIMEOUT = 15000; // 15 detik
+const wrapper = document.getElementById("pageWrapper");
+const pages = document.querySelectorAll(".page");
+const header = document.getElementById("mainHeader");
+
+let ws = null;
+
+const machineDetails = {
+
+  CONVEYOR: {
+    description: "Main conveyor system used for transferring units between stations in the assembly line. Ensures continuous production flow.",
+    image: "unknown.png"
+  },
+
+  IOT_NODE_001: {
+    description: "IoT data acquisition node used to collect and transmit machine status and sensor data to the central monitoring system.",
+    image: "iotnode001.jpeg"
+  },
+
+  Printer_M_5: {
+    description: "Industrial printer used for marking, labeling, or identification on production units at Factory 2 line.",
+    image: "printerf2m5.jpeg"
+  },
+
+  // ================= MA STATIONS =================
+
+  NR_MA_02: {
+    description: "Nutrunner station MA-02 used for tightening bolts with controlled torque in the main assembly process.",
+    image: "unknown.png"
+  },
+
+  NR_MA_03: {
+    description: "Nutrunner station MA-03 responsible for precise torque application on critical assembly points.",
+    image: "unknown.png"
+  },
+
+  NR_MA_04: {
+    description: "Nutrunner station MA-04 used for fastening components with torque monitoring and quality control.",
+    image: "unknown.png"
+  },
+
+  NR_MA_05_RH: {
+    description: "Nutrunner MA-05 Right Hand station used for tightening bolts on the right side of the unit.",
+    image: "unknown.png"
+  },
+
+  NR_MA_05_LH: {
+    description: "Nutrunner MA-05 Left Hand station used for tightening bolts on the left side of the unit.",
+    image: "unknown.png"
+  },
+
+  // ================= SA STATIONS =================
+
+  NR_SA_03_04: {
+    description: "Nutrunner station SA-03-04 used in sub-assembly process for fastening components before main assembly.",
+    image: "unknown.png"
+  },
+
+  NR_SA_08: {
+    description: "Nutrunner station SA-08 used for final tightening process in sub-assembly line.",
+    image: "unknown.png"
+  },
+
+  SA_01_VIN: {
+    description: "VIN marking station used to assign and verify Vehicle Identification Number during assembly process.",
+    image: "unknown.png"
+  },
+
+  Tire_Inflator: {
+    description: "Automated tire inflator system used to fill tires to specified pressure standards before final inspection.",
+    image: "unknown.png"
+  },
+
+  Tohnichi: {
+    description: "Torque verification tool (Tohnichi) used for manual or semi-automatic torque validation and calibration.",
+    image: "unknown.png"
+  },
+
+  // ================= DCS SYSTEM =================
+
+  DCS_MIXING_MATERIAL_F4: {
+    description: "DCS Mixing Material system used to control and monitor material mixing processes in Factory 4.",
+    image: "unknown.png"
+  },
+
+  DCS_PLAYMAKER_F4: {
+    description: "DCS Playmaker system responsible for coordinating production flow and managing process logic in Factory 4.",
+    image: "unknown.png"
+  },
+
+  DCS_QI_F4: {
+    description: "DCS Quality Inspection (QI) system used to validate product quality and ensure compliance with production standards.",
+    image: "unknown.png"
+  },
+
+  DCS_REPAIR_IN_LINE_F4: {
+    description: "Repair In-Line system used to fix detected defects directly within the production line without stopping flow.",
+    image: "unknown.png"
+  },
+
+  DCS_REPAIR_OUT_LINE_F4: {
+    description: "Repair Out-Line system used for handling defective units outside the main production flow.",
+    image: "unknown.png"
+  },
+
+  DCS_POLES_F4: {
+    description: "DCS Poles system used for handling pole-related processes or structures in Factory 4 production.",
+    image: "unknown.png"
+  },
+
+  DCS_TASK_FORCE_F4: {
+    description: "DCS Task Force system used for handling special operations, troubleshooting, or manual interventions in production.",
+    image: "unknown.png"
+  }
+
+};
+
+function updateSlide() {
+  wrapper.style.transform = `translateX(-${currentPage * 100}vw)`;
+
+  const page = pages[currentPage];
+
+  document.getElementById("titleText").textContent =
+    "Stechoq Hardware Monitoring - " + page.dataset.title;
+
+  updateCounters();
+}
+
+function nextPage() {
+  stopAutoSlide();
+
+  if (currentPage < pages.length - 1) {
+    currentPage++;
+  } else {
+    currentPage = 0;
+  }
+
+  updateSlide();
+  startAutoSlide();
+}
+
+function prevPage() {
+  stopAutoSlide();
+
+  if (currentPage > 0) {
+    currentPage--;
+  } else {
+    currentPage = pages.length - 1;
+  }
+
+  updateSlide();
+  startAutoSlide();
+}
+
+
+function startAutoSlide() {
+  stopAutoSlide();
+
+  autoSlideTimer = setTimeout(() => {
+    currentPage++;
+    if (currentPage >= pages.length) {
+      currentPage = 0;
+    }
+    updateSlide();
+    startAutoSlide(); // loop terus
+  }, AUTO_SLIDE_DELAY);
+}
+
+function stopAutoSlide() {
+  if (autoSlideTimer) {
+    clearTimeout(autoSlideTimer);
+    autoSlideTimer = null;
+  }
+}
+
+/* ===== WEBSOCKET ===== */
+function initAllWebSockets() {
+  const connected = {};
+
+  pages.forEach((page) => {
+    const server = page.dataset.server;
+    const port = page.dataset.port;
+    const key = server + ":" + port;
+
+    if (connected[key]) return;
+    connected[key] = true;
+
+    function connect() {
+      const socket = new WebSocket(`ws://${server}:${port}`);
+      wsConnections[key] = socket;
+
+      socket.onerror = () => {
+        socket.close();
+      };
+
+      socket.onclose = () => {
+        serverLastUpdate[key] = 0; // tandai down
+        setTimeout(connect, RECONNECT_DELAY);
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (!data.devices) return;
+        serverLastUpdate[key] = Date.now();
+        pages.forEach((pageElement) => {
+          if (
+            pageElement.dataset.server === server &&
+            pageElement.dataset.port === port
+          ) {
+            data.devices.forEach(dev => {
+              const id = dev.name.replace(/[^a-zA-Z0-9]/g, "_");
+              const box = pageElement.querySelector("#" + id);
+              if (!box) return;
+              box.classList.remove("UP","DOWN");
+              box.classList.add(dev.status);
+              box.querySelector(".value").textContent =
+                dev.status === "UP" ? "Running" : "Offline";
+              box.querySelector(".ip").textContent = dev.ip;
+              deviceLastUpdate[id] = Date.now();
+            });
+          }
+        });
+        updateCounters();
+      };
+    }
+    connect();
+  });
+}
+
+function startDeviceWatcher() {
+  setInterval(() => {
+    const now = Date.now();
+    Object.keys(deviceLastUpdate).forEach(id => {
+      if (now - deviceLastUpdate[id] > DEVICE_TIMEOUT) {
+
+        const box = document.getElementById(id);
+        if (box) {
+          box.classList.remove("UP");
+          box.classList.add("DOWN");
+        }
+      }
+    });
+    updateCounters();
+  }, 5000);
+}
+
+
+function updateCounters() {
+  const page = pages[currentPage];
+  const boxes = page.querySelectorAll(".machine-box");
+
+  let up = 0;
+  let down = 0;
+
+  boxes.forEach(box => {
+    if (box.classList.contains("UP")) up++;
+    if (box.classList.contains("DOWN")) down++;
+  });
+
+  document.getElementById("countUp").textContent = up;
+  document.getElementById("countDown").textContent = down;
+}
+
+function attachMachineClickEvents() {
+
+  document.querySelectorAll(".machine-box").forEach(box => {
+
+    box.addEventListener("click", () => {
+      stopAutoSlide();
+
+      const id = box.id;
+      const name = box.querySelector(".name").textContent;
+
+      document.getElementById("modalTitle").textContent = name;
+
+      if (machineDetails[id]) {
+        document.getElementById("modalDescription").textContent =
+          machineDetails[id].description;
+
+        document.getElementById("modalImage").src =
+          machineDetails[id].image;
+      } else {
+        document.getElementById("modalDescription").textContent =
+          "No description available.";
+
+        document.getElementById("modalImage").src = "";
+      }
+
+      // v2: tampilkan tombol Remote hanya untuk mesin yg ada di remotes.json
+      const ip = (box.querySelector(".ip").textContent || "").trim();
+      const remoteActions = document.getElementById("remoteActions");
+      const btnVnc = document.getElementById("btnRemoteVnc");
+      const btnSsh = document.getElementById("btnRemoteSsh");
+      if (window.remotableIds && window.remotableIds.has(id)) {
+        remoteActions.style.display = "block";
+        btnVnc.onclick = () => {
+          closeModal();
+          window.openRemoteDesktop(id, ip, name);
+        };
+        btnSsh.onclick = () => {
+          closeModal();
+          openSshTerminal(id, ip, name);
+        };
+      } else {
+        remoteActions.style.display = "none";
+      }
+
+      document.getElementById("machineModal").style.display = "flex";
+    });
+
+  });
+}
+
+function startServerWatcher() {
+  setInterval(() => {
+    const now = Date.now();
+
+    pages.forEach((page) => {
+      const server = page.dataset.server;
+      const port = page.dataset.port;
+      const key = server + ":" + port;
+
+      console.log(`Checking server ${key} - last update: ${serverLastUpdate[key]}`);
+
+      if (!serverLastUpdate[key] || (now - serverLastUpdate[key] > SERVER_TIMEOUT)) {
+        page.classList.add("server-down");
+      } else {
+        page.classList.remove("server-down");
+      }
+    });
+
+  }, 5000);
+}
+
+function toggleMenu() {
+  const menu = document.getElementById("dropdownMenu");
+  menu.classList.toggle("show");
+}
+
+// klik luar → auto close
+document.addEventListener("click", function(e) {
+  const menu = document.getElementById("dropdownMenu");
+  const title = document.getElementById("titleText");
+
+  if (!title.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.remove("show");
+  }
+});
+
+function logout() {
+  if (confirm("Keluar dari aplikasi?")) {
+    window.electronAPI.quitApp();
+  }
+}
+
+function closeModal() {
+  document.getElementById("machineModal").style.display = "none";
+  startAutoSlide();
+}
+
+/* ===== KELOLA REMOTE (v2) ===== */
+function rcEsc(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function rcMachineName(id) {
+  const box = document.getElementById(id);
+  const nm = box && box.querySelector(".name");
+  return nm ? nm.textContent.trim() : id;
+}
+
+function rcRenderRow(id, m) {
+  m = m || {};
+  const div = document.createElement("div");
+  div.className = "rc-row";
+  div.dataset.id = id;
+  const passPh = m.hasPassword ? "••••• (tersimpan, kosongkan = tetap)" : "(pakai default)";
+  div.innerHTML =
+    '<div class="rc-row-title">' + rcEsc(rcMachineName(id)) +
+      ' <small>(' + rcEsc(id) + ')</small>' +
+      '<span class="rc-del" onclick="rcRemoveRow(this)">hapus</span></div>' +
+    '<div class="rc-grid">' +
+      '<label>Host/IP <input class="rc-host" type="text" value="' + rcEsc(m.host || "") + '"></label>' +
+      '<label>Port <input class="rc-port" type="number" placeholder="(default)" value="' + rcEsc(m.port != null ? m.port : "") + '"></label>' +
+      '<label>Username <input class="rc-user" type="text" placeholder="(default)" value="' + rcEsc(m.username || "") + '"></label>' +
+      '<label>Display VNC <input class="rc-display" type="text" placeholder="(default)" value="' + rcEsc(m.vncDisplay || "") + '"></label>' +
+      '<label>Password <input class="rc-pass" type="password" placeholder="' + passPh + '"></label>' +
+    '</div>';
+  document.getElementById("rcMachines").appendChild(div);
+}
+
+function rcRemoveRow(el) {
+  const row = el.closest(".rc-row");
+  if (row) row.remove();
+  rcRefreshAddSelect();
+}
+
+function rcRefreshAddSelect() {
+  const sel = document.getElementById("rcAddSelect");
+  const configured = new Set(
+    [...document.querySelectorAll("#rcMachines .rc-row")].map((r) => r.dataset.id)
+  );
+  const opts = [];
+  document.querySelectorAll(".machine-box").forEach((box) => {
+    if (!configured.has(box.id)) opts.push(box.id);
+  });
+  sel.innerHTML = opts.length
+    ? opts.map((id) => '<option value="' + rcEsc(id) + '">' + rcEsc(rcMachineName(id)) + " (" + rcEsc(id) + ")</option>").join("")
+    : '<option value="">(semua mesin sudah dikonfigurasi)</option>';
+}
+
+function rcAddMachine() {
+  const id = document.getElementById("rcAddSelect").value;
+  if (!id) return;
+  rcRenderRow(id, {});
+  rcRefreshAddSelect();
+}
+
+async function openRemoteConfig() {
+  document.getElementById("dropdownMenu").classList.remove("show");
+  stopAutoSlide();
+
+  let cfg;
+  try {
+    cfg = await window.electronAPI.remote.getConfig();
+  } catch (e) {
+    alert("Gagal memuat config: " + e);
+    return;
+  }
+
+  const d = cfg.defaults || {};
+  document.getElementById("rcDefPort").value = d.port != null ? d.port : "";
+  document.getElementById("rcDefUser").value = d.username || "";
+  document.getElementById("rcDefDisplay").value = d.vncDisplay || "";
+  document.getElementById("rcDefPass").value = "";
+  document.getElementById("rcDefPass").placeholder = d.hasPassword
+    ? "••••• (tersimpan, kosongkan = tetap)"
+    : "(belum diset)";
+
+  const warn = document.getElementById("rcWarn");
+  if (cfg.encryptionAvailable) {
+    warn.style.display = "none";
+  } else {
+    warn.style.display = "block";
+    warn.textContent =
+      "⚠ Enkripsi OS (keyring) tidak tersedia di mesin ini — password akan disimpan apa adanya di remotes.json.";
+  }
+
+  document.getElementById("rcMachines").innerHTML = "";
+  Object.keys(cfg.machines || {}).forEach((id) => rcRenderRow(id, cfg.machines[id]));
+  rcRefreshAddSelect();
+
+  document.getElementById("remoteConfigModal").style.display = "flex";
+}
+
+function closeRemoteConfig() {
+  document.getElementById("remoteConfigModal").style.display = "none";
+  startAutoSlide();
+}
+
+async function rcSave() {
+  const defaults = {};
+  const dp = document.getElementById("rcDefPort").value.trim(); if (dp) defaults.port = Number(dp);
+  const du = document.getElementById("rcDefUser").value.trim(); if (du) defaults.username = du;
+  const dd = document.getElementById("rcDefDisplay").value.trim(); if (dd) defaults.vncDisplay = dd;
+  const dpass = document.getElementById("rcDefPass").value; if (dpass) defaults.password = dpass;
+
+  const machines = {};
+  document.querySelectorAll("#rcMachines .rc-row").forEach((row) => {
+    const id = row.dataset.id;
+    const m = {};
+    const host = row.querySelector(".rc-host").value.trim(); if (host) m.host = host;
+    const port = row.querySelector(".rc-port").value.trim(); if (port) m.port = Number(port);
+    const user = row.querySelector(".rc-user").value.trim(); if (user) m.username = user;
+    const disp = row.querySelector(".rc-display").value.trim(); if (disp) m.vncDisplay = disp;
+    const pw = row.querySelector(".rc-pass").value; if (pw) m.password = pw;
+    machines[id] = m;
+  });
+
+  try {
+    await window.electronAPI.remote.saveConfig({ defaults, machines });
+    window.remotableIds = new Set(Object.keys(machines));
+    closeRemoteConfig();
+  } catch (e) {
+    alert("Gagal menyimpan: " + (e && e.message ? e.message : e));
+  }
+}
+
+/* ===== SSH TERMINAL (v2) ===== */
+let sshTerm = null, sshFit = null, sshActiveId = null;
+let sshDataOff = null, sshExitOff = null, sshResizeHandler = null;
+
+function setSshStatus(t) {
+  const el = document.getElementById("sshStatus");
+  if (el) el.textContent = t;
+}
+
+async function openSshTerminal(id, host, name) {
+  const panel = document.getElementById("sshPanel");
+  document.getElementById("sshTitle").textContent = "SSH — " + (name || id);
+  setSshStatus("Menghubungkan…");
+  panel.style.display = "flex";
+  if (window.stopAutoSlide) window.stopAutoSlide();
+  if (window.electronAPI.setRemoteActive) window.electronAPI.setRemoteActive(true);
+
+  sshTerm = new Terminal({
+    cursorBlink: true,
+    fontSize: 14,
+    fontFamily: "Consolas, 'Courier New', monospace",
+    theme: { background: "#0b0e14", foreground: "#e6edf3" },
+  });
+  sshFit = new FitAddon.FitAddon();
+  sshTerm.loadAddon(sshFit);
+  const screen = document.getElementById("sshScreen");
+  screen.innerHTML = "";
+  sshTerm.open(screen);
+  try { sshFit.fit(); } catch (_) {}
+  sshActiveId = id;
+
+  // ketikan -> shell
+  sshTerm.onData((d) => window.electronAPI.ssh.write(id, d));
+
+  // output shell -> terminal
+  sshDataOff = window.electronAPI.ssh.onData((p) => {
+    if (p.id === id) sshTerm.write(p.data);
+  });
+  sshExitOff = window.electronAPI.ssh.onExit((p) => {
+    if (p.id === id) setSshStatus("Sesi berakhir");
+  });
+
+  // resize window -> fit + kabari shell
+  sshResizeHandler = () => {
+    if (!sshFit || !sshTerm) return;
+    try { sshFit.fit(); } catch (_) {}
+    window.electronAPI.ssh.resize(id, sshTerm.cols, sshTerm.rows);
+  };
+  window.addEventListener("resize", sshResizeHandler);
+
+  try {
+    await window.electronAPI.ssh.start(id, host, sshTerm.cols, sshTerm.rows);
+    setSshStatus("Terhubung ✓");
+    window.electronAPI.ssh.resize(id, sshTerm.cols, sshTerm.rows);
+    sshTerm.focus();
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    setSshStatus("Gagal: " + msg);
+    if (sshTerm) sshTerm.writeln("\r\n*** Gagal konek: " + msg + " ***");
+  }
+}
+
+async function closeSshTerminal() {
+  document.getElementById("sshPanel").style.display = "none";
+  if (sshResizeHandler) { window.removeEventListener("resize", sshResizeHandler); sshResizeHandler = null; }
+  if (sshDataOff) { sshDataOff(); sshDataOff = null; }
+  if (sshExitOff) { sshExitOff(); sshExitOff = null; }
+  const id = sshActiveId;
+  sshActiveId = null;
+  if (id) { try { await window.electronAPI.ssh.stop(id); } catch (_) {} }
+  if (sshTerm) { try { sshTerm.dispose(); } catch (_) {} sshTerm = null; }
+  sshFit = null;
+  document.getElementById("sshScreen").innerHTML = "";
+  if (window.electronAPI.setRemoteActive) window.electronAPI.setRemoteActive(false);
+  if (window.startAutoSlide) window.startAutoSlide();
+}
+
+// init
+initAllWebSockets();
+updateSlide();
+startAutoSlide();
+startDeviceWatcher();
+startServerWatcher();
+attachMachineClickEvents();
+
+</script>
+
+<!-- ================= noVNC (v2, ES module) ================= -->
+<script type="module">
+  import RFB from "./node_modules/@novnc/novnc/core/rfb.js";
+
+  let rfb = null;
+  let activeId = null;
+
+  // Daftar mesin yang boleh diremote (sumber: remotes.json di main process).
+  window.remotableIds = new Set();
+  try {
+    const ids = await window.electronAPI.remote.list();
+    window.remotableIds = new Set(ids || []);
+  } catch (e) {
+    console.warn("Gagal ambil daftar remote:", e);
+  }
+
+  function setStatus(t) {
+    const el = document.getElementById("remoteStatus");
+    if (el) el.textContent = t;
+  }
+
+  window.openRemoteDesktop = async function (id, host, name) {
+    const panel = document.getElementById("remotePanel");
+    document.getElementById("remoteTitle").textContent = "Remote Desktop — " + (name || id);
+    setStatus("Menghubungkan (SSH → x11vnc)…");
+    panel.style.display = "flex";
+    if (window.stopAutoSlide) window.stopAutoSlide();
+    if (window.electronAPI.setRemoteActive) window.electronAPI.setRemoteActive(true);
+
+    try {
+      const { port } = await window.electronAPI.remote.startVnc(id, host);
+      const screen = document.getElementById("vncScreen");
+      screen.innerHTML = "";
+      rfb = new RFB(screen, `ws://127.0.0.1:${port}`);
+      rfb.scaleViewport = true;
+      rfb.resizeSession = false;
+      activeId = id;
+
+      rfb.addEventListener("connect", () => setStatus("Terhubung ✓"));
+      rfb.addEventListener("disconnect", (e) =>
+        setStatus(e.detail && e.detail.clean ? "Terputus" : "Terputus (tidak normal)")
+      );
+      rfb.addEventListener("securityfailure", () => setStatus("Gagal autentikasi VNC"));
+    } catch (err) {
+      setStatus("Gagal: " + (err && err.message ? err.message : err));
+      console.error("Remote VNC error:", err);
+    }
+  };
+
+  window.closeRemoteDesktop = async function () {
+    document.getElementById("remotePanel").style.display = "none";
+    if (rfb) { try { rfb.disconnect(); } catch (_) {} rfb = null; }
+    document.getElementById("vncScreen").innerHTML = "";
+    if (activeId) {
+      const id = activeId;
+      activeId = null;
+      try { await window.electronAPI.remote.stop(id); } catch (_) {}
+    }
+    if (window.electronAPI.setRemoteActive) window.electronAPI.setRemoteActive(false);
+    if (window.startAutoSlide) window.startAutoSlide();
+  };
+
+  const fsBtn = document.getElementById("btnRemoteFs");
+  if (fsBtn) {
+    fsBtn.onclick = () => {
+      const p = document.getElementById("remotePanel");
+      if (!document.fullscreenElement) { if (p.requestFullscreen) p.requestFullscreen(); }
+      else { if (document.exitFullscreen) document.exitFullscreen(); }
+    };
+  }
+</script>
+</body>
+</html>
