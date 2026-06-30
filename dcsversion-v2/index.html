@@ -11,6 +11,16 @@
 
 <style>
 
+/* ================= TEMA (terang default / gelap) ================= */
+:root {
+  --page-bg: radial-gradient(120% 80% at 50% -10%, #ffffff, #e8edf3);
+  --render-shadow: rgba(0,0,0,.20);
+}
+html[data-theme="dark"] {
+  --page-bg: radial-gradient(120% 80% at 50% -10%, #11161e, #0a0e13);
+  --render-shadow: rgba(0,0,0,.55);
+}
+
 /* ================= GLOBAL ================= */
 html, body {
   height: 100%;
@@ -20,7 +30,7 @@ html, body {
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: #ffffff;
+  background: var(--page-bg);
   height: 100%;
   /* cursor: none; */
 }
@@ -66,7 +76,7 @@ header {
 .wrapper img {
   width: 100%;
   border-radius: 14px;
-  box-shadow: 0 25px 60px #ffffff;
+  box-shadow: 0 25px 60px var(--render-shadow);
 }
 
 /* ================= MACHINE ================= */
@@ -82,8 +92,11 @@ header {
   transition: 0.25s;
 }
 
+/* hover tanpa transform — biar tidak menimpa rotate()/scale() di kotak miring */
 .machine-box:hover {
-  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.6);
+  filter: brightness(1.12);
+  z-index: 10;
 }
 
 .top {
@@ -115,6 +128,25 @@ header {
 
 @keyframes pulse {
   50% { opacity: 0.4; }
+}
+
+/* ---- Batch 1: keterbacaan status ---- */
+.machine-box .ip {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.machine-box.UP .value { color: #00e676; font-weight: 600; }
+.machine-box.DOWN .value { color: #ff5b73; font-weight: 600; }
+
+/* DOWN: seluruh kotak glow merah, bukan cuma titik */
+.machine-box.DOWN {
+  box-shadow: 0 0 0 1px rgba(255,23,68,.45), 0 0 22px rgba(255,23,68,.22);
+  animation: boxDownGlow 1.7s infinite;
+}
+@keyframes boxDownGlow {
+  50% { box-shadow: 0 0 0 1px rgba(255,23,68,.65), 0 0 30px rgba(255,23,68,.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .machine-box.DOWN { animation: none; }
 }
 
 /* ================= ARROWS ================= */
@@ -205,6 +237,29 @@ header {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* ---- Batch 3: poles modal ---- */
+.modal-content { text-align: left; }
+.modal-head h2 { margin: 0 0 9px; font-size: 20px; }
+.modal-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mstatus {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.mstatus::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.mstatus.up { background: rgba(0,230,118,.14); color: #00e676; }
+.mstatus.down { background: rgba(255,59,92,.16); color: #ff6b81; }
+.mip {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; color: #8fa3bf;
+}
+.close-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.08); color: #cdd7e1;
+  font-size: 18px; line-height: 1; transition: .15s;
+}
+.close-btn:hover { background: #ff3b5c; color: #fff; }
+
 .page.server-down::before {
   content: "";
   position: absolute;
@@ -294,6 +349,71 @@ header {
 .menu-item:hover {
   background: #00e676;
   color: black;
+}
+
+/* ================= BATCH 2: status header + indikator halaman ================= */
+header { display: flex; align-items: center; gap: 18px; }
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.live {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #8fa3bf;
+}
+.live .live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #00e676;
+  box-shadow: 0 0 0 0 rgba(0,230,118,.5); animation: livePing 2s infinite;
+}
+.live.offline { color: #ff8094; }
+.live.offline .live-dot { background: #ff3b5c; animation: none; }
+
+.last-update { color: #8fa3bf; font-size: 12px; font-weight: 400; }
+.last-update b {
+  color: #e8eff4; font-weight: 600;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hpill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 999px;
+  background: rgba(26,35,45,.9); border: 1px solid #26323d;
+  font-size: 13px; font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.hpill .pdot { width: 8px; height: 8px; border-radius: 50%; }
+.hpill b { font-weight: 700; }
+.hpill.up .pdot { background: #00e676; }
+.hpill.down .pdot { background: #ff3b5c; }
+
+.page-indicator {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; z-index: 998;
+  background: rgba(16,22,30,.7); backdrop-filter: blur(8px);
+  padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.07);
+}
+.pg-dots { display: flex; align-items: center; gap: 7px; }
+.pg-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.25); transition: .3s; cursor: pointer;
+}
+.pg-dot.active { width: 24px; border-radius: 99px; background: #00e676; }
+.pg-progress { width: 90px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.12); overflow: hidden; }
+.pg-progress i { display: block; height: 100%; width: 0%; background: #00e676; border-radius: 2px; }
+
+@keyframes livePing {
+  0% { box-shadow: 0 0 0 0 rgba(0,230,118,.5); }
+  70% { box-shadow: 0 0 0 7px rgba(0,230,118,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live .live-dot { animation: none; }
+  .pg-progress i { transition: none !important; }
 }
 
 /* ================= REMOTE (v2) ================= */
@@ -467,18 +587,18 @@ body.edit-layout .machine-box.selected {
     </span>
 
     <div id="dropdownMenu" class="dropdown-menu">
+      <div class="menu-item" id="themeMenuItem" onclick="toggleTheme()">🌙 Mode Gelap</div>
       <div class="menu-item" onclick="toggleEditMode()">Edit Layout</div>
       <div class="menu-item" onclick="openRemoteConfig()">Kelola Remote</div>
       <div class="menu-item" onclick="logout()">Keluar</div>
     </div>
   </div>
-  <span id="systemStatus" style="float:right; font-size:14px;">
-    <span class="indicator up"></span>
-    <span id="countUp">0</span>
-
-    <span class="indicator down" style="margin-left:15px;"></span>
-    <span id="countDown">0</span>
-  </span>
+  <div class="header-right" id="systemStatus">
+    <span class="live" id="liveWrap"><span class="live-dot"></span><span id="liveLabel">LIVE</span></span>
+    <span class="last-update">Update <b id="lastUpdate">—</b></span>
+    <span class="hpill up"><span class="pdot"></span><b id="countUp">0</b> Online</span>
+    <span class="hpill down"><span class="pdot"></span><b id="countDown">0</b> Offline</span>
+  </div>
 </header>
 
 <div class="pages">
@@ -754,6 +874,28 @@ body.edit-layout .machine-box.selected {
           data-title="JMP">
       <div class="wrapper">
         <img src="jmp-bg.png">
+        <div id="GATE_INBOUND_JMP" class="machine-box DOWN"
+          style="top:230px; left:1050px;">
+          <div class="top">
+            <div class="name">GATE Inbound JMP</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="GATE_OUTBOUND_JMP" class="machine-box DOWN"
+          style="top:300px; left:1050px;">
+          <div class="top">
+            <div class="name">GATE Outbound JMP</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
 
       </div>
     </section>
@@ -764,12 +906,24 @@ body.edit-layout .machine-box.selected {
 <div class="arrow left" onclick="prevPage()"><</div>
 <div class="arrow right" onclick="nextPage()">></div>
 
+<!-- ================= INDIKATOR HALAMAN (v2 batch2) ================= -->
+<div class="page-indicator">
+  <div class="pg-dots" id="pgDots"></div>
+  <div class="pg-progress"><i id="pgProgressBar"></i></div>
+</div>
+
 <!-- ================= MODAL ================= -->
 <div id="machineModal" class="modal">
   <div class="modal-content">
-    <span class="close-btn" onclick="closeModal()">x</span>
+    <span class="close-btn" onclick="closeModal()">×</span>
 
-    <h2 id="modalTitle">Machine Name</h2>
+    <div class="modal-head">
+      <h2 id="modalTitle">Machine Name</h2>
+      <div class="modal-meta">
+        <span id="modalStatus" class="mstatus">—</span>
+        <span id="modalIp" class="mip">—</span>
+      </div>
+    </div>
 
     <img id="modalImage" src="" alt="Machine Image">
 
@@ -864,6 +1018,7 @@ const DEVICE_TIMEOUT = 15000; // 15 detik
 const deviceLastUpdate = {};
 const serverLastUpdate = {};
 const SERVER_TIMEOUT = 15000; // 15 detik
+let lastDataTs = 0; // kapan terakhir terima data (untuk LIVE / last-update)
 const wrapper = document.getElementById("pageWrapper");
 const pages = document.querySelectorAll(".page");
 const header = document.getElementById("mainHeader");
@@ -989,6 +1144,7 @@ function updateSlide() {
     "Stechoq Hardware Monitoring - " + page.dataset.title;
 
   updateCounters();
+  updatePageIndicator();
 }
 
 function nextPage() {
@@ -1029,6 +1185,8 @@ function startAutoSlide() {
     updateSlide();
     startAutoSlide(); // loop terus
   }, AUTO_SLIDE_DELAY);
+
+  animateProgress();
 }
 
 function stopAutoSlide() {
@@ -1036,6 +1194,7 @@ function stopAutoSlide() {
     clearTimeout(autoSlideTimer);
     autoSlideTimer = null;
   }
+  resetProgress();
 }
 
 /* ===== WEBSOCKET ===== */
@@ -1067,6 +1226,8 @@ function initAllWebSockets() {
         const data = JSON.parse(event.data);
         if (!data.devices) return;
         serverLastUpdate[key] = Date.now();
+        lastDataTs = Date.now();
+        updateLiveStatus();
         pages.forEach((pageElement) => {
           if (
             pageElement.dataset.server === server &&
@@ -1156,6 +1317,14 @@ function attachMachineClickEvents() {
 
       // v2: tampilkan tombol Remote hanya untuk mesin yg ada di remotes.json
       const ip = (box.querySelector(".ip").textContent || "").trim();
+
+      // v2 batch3: status + IP di header modal
+      const _up = box.classList.contains("UP");
+      const _mst = document.getElementById("modalStatus");
+      if (_mst) { _mst.textContent = _up ? "Online" : "Offline"; _mst.className = "mstatus " + (_up ? "up" : "down"); }
+      const _mip = document.getElementById("modalIp");
+      if (_mip) _mip.textContent = ip || "-";
+
       const remoteActions = document.getElementById("remoteActions");
       const btnVnc = document.getElementById("btnRemoteVnc");
       const btnSsh = document.getElementById("btnRemoteSsh");
@@ -1584,13 +1753,99 @@ function resetLayout() {
   setEditInfo("Direset ke posisi awal HTML. Klik Simpan untuk permanen.");
 }
 
+/* ===== TEMA (gelap/terang, default terang) ===== */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const item = document.getElementById("themeMenuItem");
+  if (item) item.textContent = theme === "dark" ? "☀ Mode Terang" : "🌙 Mode Gelap";
+}
+function toggleTheme() {
+  document.getElementById("dropdownMenu").classList.remove("show");
+  const cur = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  const next = cur === "dark" ? "light" : "dark";
+  try { localStorage.setItem("theme", next); } catch (e) {}
+  applyTheme(next);
+}
+function initTheme() {
+  let t = "light";
+  try { t = localStorage.getItem("theme") || "light"; } catch (e) {}
+  applyTheme(t);
+}
+
+/* ===== BATCH 3: helper overlay (modal/panel kebuka?) ===== */
+function anyOverlayOpen() {
+  return [...document.querySelectorAll(".modal, .rc-modal, .remote-panel")]
+    .some((el) => getComputedStyle(el).display !== "none");
+}
+
+/* ===== BATCH 2: indikator halaman, progress auto-slide, status live ===== */
+function buildPageIndicator() {
+  const dots = document.getElementById("pgDots");
+  if (!dots) return;
+  dots.innerHTML = "";
+  pages.forEach((_, i) => {
+    const d = document.createElement("div");
+    d.className = "pg-dot" + (i === currentPage ? " active" : "");
+    d.title = "Halaman " + (i + 1);
+    d.addEventListener("click", () => goToPage(i));
+    dots.appendChild(d);
+  });
+}
+function updatePageIndicator() {
+  document.querySelectorAll("#pgDots .pg-dot").forEach((d, i) => {
+    d.classList.toggle("active", i === currentPage);
+  });
+}
+function goToPage(i) {
+  if (editMode) return;
+  stopAutoSlide();
+  currentPage = i;
+  updateSlide();
+  startAutoSlide();
+}
+function animateProgress() {
+  const bar = document.getElementById("pgProgressBar");
+  if (!bar) return;
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+  void bar.offsetWidth; // paksa reflow
+  bar.style.transition = "width " + AUTO_SLIDE_DELAY + "ms linear";
+  bar.style.width = "100%";
+}
+function resetProgress() {
+  const bar = document.getElementById("pgProgressBar");
+  if (!bar) return;
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+}
+function updateLiveStatus() {
+  const wrap = document.getElementById("liveWrap");
+  const label = document.getElementById("liveLabel");
+  const lu = document.getElementById("lastUpdate");
+  const fresh = lastDataTs && (Date.now() - lastDataTs < SERVER_TIMEOUT);
+  if (wrap) wrap.classList.toggle("offline", !fresh);
+  if (label) label.textContent = fresh ? "LIVE" : "OFFLINE";
+  if (lu && lastDataTs) lu.textContent = new Date(lastDataTs).toLocaleTimeString("en-GB");
+}
+
 // init
+initTheme();
 initAllWebSockets();
+buildPageIndicator();
 updateSlide();
 startAutoSlide();
 startDeviceWatcher();
 startServerWatcher();
 attachMachineClickEvents();
+updateLiveStatus();
+setInterval(updateLiveStatus, 3000);
+
+// v2 batch3: pause auto-slide saat mouse di area konten, lanjut lagi saat keluar
+const pagesEl = document.querySelector(".pages");
+if (pagesEl) {
+  pagesEl.addEventListener("mouseenter", () => { if (!editMode) stopAutoSlide(); });
+  pagesEl.addEventListener("mouseleave", () => { if (!editMode && !anyOverlayOpen()) startAutoSlide(); });
+}
 
 // v2: simpan posisi awal HTML (buat Reset) lalu terapkan layout tersimpan
 document.querySelectorAll(".machine-box").forEach((box) => {

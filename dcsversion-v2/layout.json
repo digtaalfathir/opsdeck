@@ -78,5 +78,13 @@
   "DCS_TASK_FORCE_F4": {
     "left": 1033,
     "top": 333
+  },
+  "GATE_INBOUND_JMP": {
+    "left": 96,
+    "top": 355
+  },
+  "GATE_OUTBOUND_JMP": {
+    "left": 1114,
+    "top": 343
   }
 }

@@ -20,16 +20,15 @@ Dashboard monitoring status hardware (DCS/IPC, IoT node, printer, nutrunner, dll
 
 | Path | Isi | Keterangan |
 |---|---|---|
-| `index.html` | Dashboard (salinan kerja root) | Identik dengan `dcsversion/index.html` |
 | `dcsversion/` | **Dashboard v1** (Electron) | Versi produksi — monitoring saja |
-| `dcsversion-v2/` | **Dashboard v2** (Electron) | v1 + **Remote VNC & SSH** + Kelola Remote |
+| `dcsversion-v2/` | **Dashboard v2** (Electron) | v1 + **Remote VNC & SSH** + Kelola Remote + tema gelap/terang |
 | `serverside/` | **Monitor server** | Node WebSocket ping monitor |
-| `testing/` | Sandbox | Varian uji server + halaman grid sederhana |
 | `shared/` | `needrestart.json` | File flag antar-proses dari server |
-| `unused/` | Aset lama | Tidak dipakai |
-| `*.png`, `*.jpeg` | Denah & gambar mesin | Background tiap halaman + gambar modal |
+| `ide.txt` | Catatan ide | Rencana fitur (v3, dll) |
 
-README detail per folder: [dcsversion](dcsversion/README.md) · [dcsversion-v2](dcsversion-v2/README.md) · [serverside](serverside/README.md) · [testing](testing/README.md)
+Tiap folder dashboard self-contained (punya gambar denah & mesin sendiri).
+
+README detail per folder: [dcsversion](dcsversion/README.md) · [dcsversion-v2](dcsversion-v2/README.md) · [serverside](serverside/README.md)
 
 ## Quick start
 
@@ -49,7 +48,7 @@ README detail per folder: [dcsversion](dcsversion/README.md) · [dcsversion-v2](
 ## Konfigurasi singkat
 
 - **Daftar device** (yang di-ping): array `devices` di `serverside/index.js`.
-- **Halaman & posisi kotak**: di `index.html` — tiap `<section class="page" data-server="IP" data-port="PORT">` = 1 plant, tiap `.machine-box` = 1 device. `id` kotak **harus** = nama device yang disanitasi (`[^a-zA-Z0-9]` → `_`).
+- **Halaman & posisi kotak**: di `dcsversion-v2/index.html` (atau `dcsversion/index.html` untuk v1) — tiap `<section class="page" data-server="IP" data-port="PORT">` = 1 plant, tiap `.machine-box` = 1 device. `id` kotak **harus** = nama device yang disanitasi (`[^a-zA-Z0-9]` → `_`). Di v2 posisi kotak bisa diatur lewat **Edit Layout** (drag & simpan ke `layout.json`).
 - **Remote (v2)**: per-mesin di `dcsversion-v2/remotes.json` atau lewat UI **Kelola Remote**.
 
 ## ⚠️ Catatan / known issues
@@ -57,4 +56,4 @@ README detail per folder: [dcsversion](dcsversion/README.md) · [dcsversion-v2](
 - **Port server**: `serverside/index.js` pakai `10012`, tapi dashboard connect ke `10011`. Samakan port server dengan `data-port` di dashboard.
 - Kotak `DCS_REPAIR_OUT_LINE_F4` di denah belum punya device sumber → selalu tampil DOWN.
 - Flag `needrestart` di server tidak otomatis di-clear saat device pulih.
-- `index.html` ada **3 salinan** (root, `dcsversion/`, `dcsversion-v2/`) yang harus disinkronkan setiap kali diedit.
+- `index.html` ada **2 salinan** (`dcsversion/`, `dcsversion-v2/`) — perubahan logika yang sama perlu disinkronkan ke keduanya.
