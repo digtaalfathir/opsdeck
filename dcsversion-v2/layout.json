@@ -51,6 +51,30 @@
     "left": 219,
     "top": 377
   },
+  "DCS_INJECTION_1300T_F3": {
+    "left": 1019,
+    "top": 764
+  },
+  "DCS_INJECTION1_1600T_F3": {
+    "left": 358,
+    "top": 410
+  },
+  "DCS_INJECTION1_2500T_F3": {
+    "left": 376,
+    "top": 287
+  },
+  "DCS_INJECTION2_2500T_F3": {
+    "left": 960,
+    "top": 127
+  },
+  "DCS_INJECTION3_2500T_F3": {
+    "left": 405,
+    "top": 135
+  },
+  "DCS_INJECTION2_1600T_F3": {
+    "left": 338,
+    "top": 549
+  },
   "DCS_MATERIAL_INPUT_F4": {
     "left": 43,
     "top": 609
