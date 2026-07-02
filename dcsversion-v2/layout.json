@@ -44,40 +44,60 @@
     "top": 430
   },
   "IOT_NODE_001": {
-    "left": 218,
-    "top": 446
+    "left": 219,
+    "top": 441
   },
   "Printer_M_5": {
     "left": 219,
-    "top": 383
+    "top": 377
+  },
+  "DCS_MATERIAL_INPUT_F4": {
+    "left": 43,
+    "top": 609
+  },
+  "DCS_INJECTION_RESIN1_F4": {
+    "left": 488,
+    "top": 626
+  },
+  "DCS_INJECTION_RESIN2_F4": {
+    "left": 488,
+    "top": 437
+  },
+  "DCS_INJECTION_RESIN3_F4": {
+    "left": 493,
+    "top": 287
+  },
+  "PLC_INJECTION_F4": {
+    "left": 590,
+    "top": 703
   },
   "DCS_MIXING_MATERIAL_F4": {
-    "left": 368,
-    "top": 630
+    "left": 371,
+    "top": 601
   },
   "DCS_PLAYMAKER_F4": {
-    "left": 371,
-    "top": 420
+    "left": 376,
+    "top": 376
   },
   "DCS_QI_F4": {
-    "left": 376,
-    "top": 269
+    "left": 380,
+    "top": 230
   },
   "DCS_REPAIR_IN_LINE_F4": {
     "left": 690,
     "top": 166
   },
   "DCS_POLES_F4": {
-    "left": 1021,
-    "top": 190
+    "left": 1019,
+    "top": 147
   },
   "DCS_REPAIR_OUT_LINE_F4": {
     "left": 1028,
-    "top": 261
+    "top": 217
   },
   "DCS_TASK_FORCE_F4": {
-    "left": 1033,
-    "top": 333
+    "left": 1035,
+    "top": 289
   },
   "GATE_INBOUND_JMP": {
     "left": 96,

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stechoq Hardware Monitoring</title>
+<title>Stechoq Ops Center</title>
 
 <!-- xterm.js (v2, untuk SSH terminal) -->
 <link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css">
@@ -259,6 +259,18 @@ header {
   font-size: 18px; line-height: 1; transition: .15s;
 }
 .close-btn:hover { background: #ff3b5c; color: #fff; }
+
+/* ---- info device (latency, severity, availability, dll) di modal ---- */
+.minfo { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 10px; margin: 14px 0 4px; }
+.minfo .mi { background: #0f141b; border: 1px solid #26323d; border-radius: 9px; padding: 8px 11px; }
+.minfo .mi.wide { grid-column: 1 / -1; }
+.minfo .mi .k { font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: #8a98a5; }
+.minfo .mi .v { font-size: 14px; font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; word-break: break-word; }
+.sev { display: inline-block; padding: 2px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: .3px; }
+.sev.critical { background: rgba(255,45,85,.22); color: #ff5b73; }
+.sev.high { background: rgba(255,138,0,.16); color: #ff9f43; }
+.sev.medium, .sev.med { background: rgba(255,176,32,.16); color: #ffb020; }
+.sev.low { background: rgba(120,170,255,.14); color: #86b6ff; }
 
 .page.server-down::before {
   content: "";
@@ -583,7 +595,7 @@ body.edit-layout .machine-box.selected {
 <header id="mainHeader">
   <div class="header-menu">
     <span id="titleText" onclick="toggleMenu()">
-      Stechoq Hardware Monitoring - Maka Motors
+      Stechoq Ops Center - Maka Motors
     </span>
 
     <div id="dropdownMenu" class="dropdown-menu">
@@ -752,7 +764,7 @@ body.edit-layout .machine-box.selected {
     <section class="page"
           data-server="10.10.1.210"
           data-port="10011"
-          data-title="Sugity Creative Plant1 Factory 2">
+          data-title="Sugity Creative - Cibitung - Factory 2">
       <div class="wrapper">
         <img src="sugityp1f2-bg.png">
         <div id="IOT_NODE_001" class="machine-box DOWN"
@@ -784,7 +796,72 @@ body.edit-layout .machine-box.selected {
     <section class="page"
           data-server="10.10.1.210"
           data-port="10011"
-          data-title="Sugity Creative Plant1 Factory 4">
+          data-title="Sugity Creative - Cibitung -  Factory 4 - Injection">
+      <div class="wrapper">
+        <img src="sugityp1f4_2-bg.png">
+        <div id="DCS_MATERIAL_INPUT_F4" class="machine-box DOWN"
+          style="top:230px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Material Input F4</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_INJECTION_RESIN1_F4" class="machine-box DOWN"
+          style="top:300px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Injection Resin1 F4</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_INJECTION_RESIN2_F4" class="machine-box DOWN"
+          style="top:370px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Injection Resin2 F4</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="DCS_INJECTION_RESIN3_F4" class="machine-box DOWN"
+          style="top:420px; left:1050px;">
+          <div class="top">
+            <div class="name">DCS Injection Resin3 F4</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="PLC_INJECTION_F4" class="machine-box DOWN"
+          style="top:450px; left:1050px;">
+          <div class="top">
+            <div class="name">PLC Injection F4</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+     <!-- PAGE 4 -->
+    <section class="page"
+          data-server="10.10.1.210"
+          data-port="10011"
+          data-title="Sugity Creative - Cibitung - Factory 4 - Painting">
       <div class="wrapper">
         <img src="sugityp1f4-bg.png">
         <div id="DCS_MIXING_MATERIAL_F4" class="machine-box DOWN"
@@ -867,7 +944,7 @@ body.edit-layout .machine-box.selected {
       </div>
     </section>
 
-    <!-- PAGE 4 -->
+    <!-- PAGE 5 -->
     <section class="page"
           data-server="10.10.1.223"
           data-port="10011"
@@ -924,6 +1001,8 @@ body.edit-layout .machine-box.selected {
         <span id="modalIp" class="mip">—</span>
       </div>
     </div>
+
+    <div id="modalInfo" class="minfo"></div>
 
     <img id="modalImage" src="" alt="Machine Image">
 
@@ -1016,6 +1095,7 @@ const wsConnections = {};
 const RECONNECT_DELAY = 3000;
 const DEVICE_TIMEOUT = 15000; // 15 detik
 const deviceLastUpdate = {};
+const deviceData = {}; // data lengkap per device (latency, severity, dll) dari WS
 const serverLastUpdate = {};
 const SERVER_TIMEOUT = 15000; // 15 detik
 let lastDataTs = 0; // kapan terakhir terima data (untuk LIVE / last-update)
@@ -1141,8 +1221,32 @@ const machineDetails = {
   GATE_OUTBOUND_JMP: {
     description: "Outbound gate system at JMP used for monitoring and controlling the exit of materials or products from the facility.",
     image: "unknown.png"
-  }
+  },
 
+  DCS_MATERIAL_INPUT_F4: {
+    description: "DCS Material Input system used for managing and monitoring the input of raw materials into the production process.",
+    image: "unknown.png"
+  },
+
+  DCS_INJECTION_RESIN1_F4: {
+    description: "DCS Injection Resin 1 system used for controlling the injection of resin material in the molding process.",
+    image: "unknown.png"
+  },
+
+  DCS_INJECTION_RESIN2_F4: {
+    description: "DCS Injection Resin 2 system used for controlling the injection of resin material in the molding process.",
+    image: "unknown.png"
+  },
+
+  DCS_INJECTION_RESIN3_F4: {
+    description: "DCS Injection Resin 3 system used for controlling the injection of resin material in the molding process.",
+    image: "unknown.png"
+  },
+
+  PLC_INJECTION_F4: {
+    description: "PLC Injection system used for programmable logic control of the injection molding process in Factory 4.",
+    image: "unknown.png"
+  }
 };
 
 function updateSlide() {
@@ -1151,7 +1255,7 @@ function updateSlide() {
   const page = pages[currentPage];
 
   document.getElementById("titleText").textContent =
-    "Stechoq Hardware Monitoring - " + page.dataset.title;
+    "Stechoq Ops Center : " + page.dataset.title;
 
   updateCounters();
   updatePageIndicator();
@@ -1249,10 +1353,19 @@ function initAllWebSockets() {
               if (!box) return;
               box.classList.remove("UP","DOWN");
               box.classList.add(dev.status);
-              box.querySelector(".value").textContent =
-                dev.status === "UP" ? "Running" : "Offline";
+              const _val = box.querySelector(".value");
+              if (dev.status === "UP") {
+                const _lat = dev.latency;
+                _val.textContent = (_lat !== null && _lat !== undefined) ? _lat + " ms" : "Running";
+                _val.style.color = (_lat === null || _lat === undefined) ? ""
+                  : (_lat <= 20 ? "#00e676" : _lat <= 100 ? "#ffb020" : "#ff6b81");
+              } else {
+                _val.textContent = "Offline";
+                _val.style.color = "";
+              }
               box.querySelector(".ip").textContent = dev.ip;
               deviceLastUpdate[id] = Date.now();
+              deviceData[id] = dev;
             });
           }
         });
@@ -1274,7 +1387,7 @@ function startDeviceWatcher() {
           box.classList.remove("UP");
           box.classList.add("DOWN");
           const v = box.querySelector(".value");
-          if (v) v.textContent = "Offline";
+          if (v) { v.textContent = "Offline"; v.style.color = ""; }
         }
       }
     });
@@ -1334,6 +1447,8 @@ function attachMachineClickEvents() {
       if (_mst) { _mst.textContent = _up ? "Online" : "Offline"; _mst.className = "mstatus " + (_up ? "up" : "down"); }
       const _mip = document.getElementById("modalIp");
       if (_mip) _mip.textContent = ip || "-";
+      const _minfo = document.getElementById("modalInfo");
+      if (_minfo) _minfo.innerHTML = renderDeviceInfo(deviceData[id]);
 
       const remoteActions = document.getElementById("remoteActions");
       const btnVnc = document.getElementById("btnRemoteVnc");
@@ -1830,6 +1945,59 @@ function updateLiveStatus() {
   if (wrap) wrap.classList.toggle("offline", !fresh);
   if (label) label.textContent = fresh ? "LIVE" : "OFFLINE";
   if (lu && lastDataTs) lu.textContent = new Date(lastDataTs).toLocaleTimeString("en-GB");
+}
+
+/* ===== INFO DEVICE (mengikuti field dari server: latency, severity, dll) ===== */
+function fmtSec(s) {
+  s = Math.max(0, Math.floor(Number(s) || 0));
+  const m = Math.floor(s / 60), h = Math.floor(m / 60);
+  return h ? `${h}h ${m % 60}m` : m ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+// Ambil field sesuai yang dikirim server (bukan dump semua key).
+function renderDeviceInfo(dev) {
+  if (!dev) return '<div class="mi wide"><div class="v" style="font-weight:400;color:#8a98a5">Belum ada data live dari server.</div></div>';
+
+  const ms = v => (v !== null && v !== undefined) ? `${v} ms` : "—";
+  const avail = dev.uptimeToday ?? 100;
+  const availCol = avail >= 99 ? "#00e676" : avail >= 95 ? "#ffb020" : "#ff6b81";
+  const row = (label, valHtml, wide) =>
+    `<div class="mi${wide ? " wide" : ""}"><div class="k">${label}</div><div class="v">${valHtml}</div></div>`;
+
+  let html = "";
+  if (dev.severity) html += row("Severity", `<span class="sev ${String(dev.severity).toLowerCase()}">${rcEsc(dev.severity)}</span>`);
+  html += row("Availability", `<span style="color:${availCol}">${rcEsc(avail)}%</span>`);
+  html += row("Latency", rcEsc(ms(dev.latency)));
+  html += row("Avg latency", rcEsc(ms(dev.avgLatency)));
+  html += row("Peak latency", rcEsc(ms(dev.maxLatency)));
+  html += row("Downtime hari ini", rcEsc(fmtSec(dev.downtimeTodaySec ?? 0)));
+
+  if (dev.status === "DOWN" && dev.downSince) {
+    const t = new Date(String(dev.downSince).replace(" ", "T")).getTime();
+    const dur = isNaN(t) ? "" : ` · sudah ${fmtSec(Math.floor((Date.now() - t) / 1000))}`;
+    html += row("Down sejak", `${rcEsc(dev.downSince)}<span style="color:#ff6b81">${dur}</span>`, true);
+  }
+
+  const hist = Array.isArray(dev.history) ? dev.history.slice(-5).reverse() : [];
+  if (hist.length) {
+    html += `<div class="mi wide"><div class="k">Recent events</div><div class="v" style="font-weight:400">` +
+      hist.map(h => {
+        const up = h.status === "UP";
+        return `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin-top:4px">
+          <span style="width:7px;height:7px;border-radius:50%;flex:none;background:${up ? "#00e676" : "#ff6b81"}"></span>
+          <span style="color:#8a98a5;font-family:ui-monospace,Menlo,monospace">${rcEsc(h.timestamp)}</span>
+          <span style="color:${up ? "#00e676" : "#ff6b81"};font-weight:600">${rcEsc(h.status)}</span>
+        </div>`;
+      }).join("") + `</div></div>`;
+  }
+
+  [["Owner", dev.owner], ["Location", dev.location], ["Vendor", dev.vendor], ["Notes", dev.notes]]
+    .forEach(([label, v]) => {
+      if (v === undefined || v === null || String(v).trim() === "") return;
+      html += row(label, rcEsc(String(v)), label === "Notes");
+    });
+
+  return html;
 }
 
 // init
