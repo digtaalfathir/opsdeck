@@ -4,3 +4,4 @@ dcsversion-v2/remotes.json
 dcsversion-v2/*.bak
 dcsversion-v2/try
 .claude
+.gitignore

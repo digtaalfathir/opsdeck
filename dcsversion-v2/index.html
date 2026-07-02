@@ -567,7 +567,7 @@ body.edit-layout .machine-box.selected {
   color: #9fb0c7;
   gap: 4px;
 }
-.rc-grid input, .rc-add select {
+.rc-grid input, .rc-grid select, .rc-add select {
   background: #0f131b;
   border: 1px solid #2a3140;
   color: #fff;
@@ -782,6 +782,17 @@ body.edit-layout .machine-box.selected {
           style="top:340px; left:180px;">
           <div class="top">
             <div class="name">Printer M#5</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
+        <div id="SERVER_SUGITY" class="machine-box DOWN"
+          style="top:370px; left:180px;">
+          <div class="top">
+            <div class="name">SERVER SUGITY</div>
             <div class="status-dot"></div>
           </div>
           <div class="bottom">
@@ -1049,7 +1060,17 @@ body.edit-layout .machine-box.selected {
             <div class="ip">-</div>
           </div>
         </div>
-
+        <div id="SERVER_JMP" class="machine-box DOWN"
+          style="top:370px; left:1050px;">
+          <div class="top">
+            <div class="name">SERVER JMP</div>
+            <div class="status-dot"></div>
+          </div>
+          <div class="bottom">
+            <div class="value">-</div>
+            <div class="ip">-</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1087,8 +1108,8 @@ body.edit-layout .machine-box.selected {
     </p>
 
     <div id="remoteActions" style="display:none; margin-top:16px;">
-      <button id="btnRemoteVnc" class="remote-btn">🖥️ Remote Desktop (VNC)</button>
-      <button id="btnRemoteSsh" class="remote-btn ssh" style="margin-top:10px;">⌨️ SSH Terminal</button>
+      <button id="btnRemoteVnc" class="remote-btn">Remote Desktop (VNC)</button>
+      <button id="btnRemoteSsh" class="remote-btn ssh" style="margin-top:10px;">SSH Terminal</button>
       <div id="remoteOfflineNote" style="display:none; margin-top:10px; color:#ff8a9b; font-size:12px;">
         ⚠ Mesin sedang OFFLINE — remote tidak tersedia.
       </div>
@@ -1353,6 +1374,16 @@ const machineDetails = {
     description: "DCS Injection 1600T system used for controlling the injection molding process with a 1600-ton capacity in Factory 3.",
     image: "unknown.png"
   },
+
+  SERVER_SUGITY: {
+    description: "Central server for Sugity Creative used for data aggregation, processing, and monitoring of factory operations.",
+    image: "unknown.png"
+  },
+
+  SERVER_JMP: {
+    description: "Central server for JMP used for data aggregation, processing, and monitoring of facility operations.",
+    image: "unknown.png"
+  }
 };
 
 function updateSlide() {
@@ -1563,6 +1594,10 @@ function attachMachineClickEvents() {
       if (window.remotableIds && window.remotableIds.has(id)) {
         remoteActions.style.display = "block";
 
+        // Mesin headless (mis. server tanpa layar) → sembunyikan tombol VNC, sisakan SSH.
+        const cap = (window.remoteCaps && window.remoteCaps[id]) || {};
+        btnVnc.style.display = cap.vncMode === "none" ? "none" : "";
+
         // Hanya boleh remote kalau status mesin UP. Kalau DOWN/offline -> disable.
         const isUp = box.classList.contains("UP");
         btnVnc.disabled = !isUp;
@@ -1572,7 +1607,8 @@ function attachMachineClickEvents() {
         if (isUp) {
           btnVnc.onclick = () => {
             closeModal();
-            window.openRemoteDesktop(id, ip, name);
+            if (cap.vncMode === "external") window.openExternalVnc(id, ip, name);
+            else window.openRemoteDesktop(id, ip, name);
           };
           btnSsh.onclick = () => {
             closeModal();
@@ -1679,6 +1715,11 @@ function rcRenderRow(id, m) {
       '<label>Port <input class="rc-port" type="number" placeholder="(default)" value="' + rcEsc(m.port != null ? m.port : "") + '"></label>' +
       '<label>Username <input class="rc-user" type="text" placeholder="(default)" value="' + rcEsc(m.username || "") + '"></label>' +
       '<label>Display VNC <input class="rc-display" type="text" placeholder="(default)" value="' + rcEsc(m.vncDisplay || "") + '"></label>' +
+      '<label>Mode VNC <select class="rc-vncmode">' +
+        [["x11vnc", "x11vnc (default)"], ["direct", "direct (VNC server sudah ada)"], ["external", "external (buka RealVNC)"], ["none", "none (headless / SSH saja)"]]
+          .map(function (o) { return '<option value="' + o[0] + '"' + ((m.vncMode || "x11vnc") === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; })
+          .join("") +
+      "</select></label>" +
       '<label>Password <input class="rc-pass" type="password" placeholder="' + passPh + '"></label>' +
     '</div>';
   document.getElementById("rcMachines").appendChild(div);
@@ -1768,13 +1809,18 @@ async function rcSave() {
     const port = row.querySelector(".rc-port").value.trim(); if (port) m.port = Number(port);
     const user = row.querySelector(".rc-user").value.trim(); if (user) m.username = user;
     const disp = row.querySelector(".rc-display").value.trim(); if (disp) m.vncDisplay = disp;
+    const vm = row.querySelector(".rc-vncmode"); if (vm && vm.value) m.vncMode = vm.value;
     const pw = row.querySelector(".rc-pass").value; if (pw) m.password = pw;
     machines[id] = m;
   });
 
   try {
     await window.electronAPI.remote.saveConfig({ defaults, machines });
-    window.remotableIds = new Set(Object.keys(machines));
+    try {
+      const caps = await window.electronAPI.remote.list();
+      window.remoteCaps = caps || {};
+      window.remotableIds = new Set(Object.keys(window.remoteCaps));
+    } catch (_) { window.remotableIds = new Set(Object.keys(machines)); }
     closeRemoteConfig();
   } catch (e) {
     alert("Gagal menyimpan: " + (e && e.message ? e.message : e));
@@ -2134,11 +2180,13 @@ applyLayout();
   let rfb = null;
   let activeId = null;
 
-  // Daftar mesin yang boleh diremote (sumber: remotes.json di main process).
+  // Kapabilitas remote per mesin (sumber: remotes.json). caps[id] = { vncMode }.
+  window.remoteCaps = {};
   window.remotableIds = new Set();
   try {
-    const ids = await window.electronAPI.remote.list();
-    window.remotableIds = new Set(ids || []);
+    const caps = await window.electronAPI.remote.list();
+    window.remoteCaps = caps || {};
+    window.remotableIds = new Set(Object.keys(window.remoteCaps));
   } catch (e) {
     console.warn("Gagal ambil daftar remote:", e);
   }
@@ -2148,6 +2196,17 @@ applyLayout();
     if (el) el.textContent = t;
   }
 
+  // VNC "external": buka viewer sistem (RealVNC) langsung ke IP, gak embed.
+  window.openExternalVnc = async function (id, host, name) {
+    try {
+      await window.electronAPI.remote.openExternal(id, host);
+    } catch (err) {
+      alert("Gagal membuka VNC viewer untuk " + (name || id) + ":\n" +
+        (err && err.message ? err.message : err) +
+        "\n\n(Pastikan RealVNC Viewer terinstall & perintahnya benar — bisa diatur via 'vncViewerCmd' di remotes.json.)");
+    }
+  };
+
   window.openRemoteDesktop = async function (id, host, name) {
     const mbox = document.getElementById(id);
     if (mbox && !mbox.classList.contains("UP")) {
@@ -2156,20 +2215,26 @@ applyLayout();
     }
     const panel = document.getElementById("remotePanel");
     document.getElementById("remoteTitle").textContent = "Remote Desktop — " + (name || id);
-    setStatus("Menghubungkan (SSH → x11vnc)…");
+    setStatus("Menghubungkan…");
     panel.style.display = "flex";
     if (window.stopAutoSlide) window.stopAutoSlide();
     if (window.electronAPI.setRemoteActive) window.electronAPI.setRemoteActive(true);
 
     try {
-      const { port } = await window.electronAPI.remote.startVnc(id, host);
+      const { port, vncPassword } = await window.electronAPI.remote.startVnc(id, host);
       const screen = document.getElementById("vncScreen");
       screen.innerHTML = "";
-      rfb = new RFB(screen, `ws://127.0.0.1:${port}`);
+      const opts = vncPassword ? { credentials: { password: vncPassword } } : {};
+      rfb = new RFB(screen, `ws://127.0.0.1:${port}`, opts);
       rfb.scaleViewport = true;
       rfb.resizeSession = false;
       activeId = id;
 
+      // Kalau VNC server minta password (mis. RealVNC) & belum ada di config → tanya.
+      rfb.addEventListener("credentialsrequired", () => {
+        const p = vncPassword || window.prompt("Password VNC untuk " + (name || id) + ":") || "";
+        try { rfb.sendCredentials({ password: p }); } catch (_) {}
+      });
       rfb.addEventListener("connect", () => setStatus("Terhubung ✓"));
       rfb.addEventListener("disconnect", (e) =>
         setStatus(e.detail && e.detail.clean ? "Terputus" : "Terputus (tidak normal)")

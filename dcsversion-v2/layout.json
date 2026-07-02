@@ -51,6 +51,10 @@
     "left": 219,
     "top": 377
   },
+  "SERVER_SUGITY": {
+    "left": 14,
+    "top": 43
+  },
   "DCS_INJECTION_1300T_F3": {
     "left": 1019,
     "top": 764
@@ -130,5 +134,9 @@
   "GATE_OUTBOUND_JMP": {
     "left": 1114,
     "top": 343
+  },
+  "SERVER_JMP": {
+    "left": 240,
+    "top": 64
   }
 }

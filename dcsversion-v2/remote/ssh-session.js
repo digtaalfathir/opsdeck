@@ -43,6 +43,7 @@ function startVncSession(opts) {
     password,
     privateKey,
     vncPort = 5900,
+    vncMode = "x11vnc",
     readyTimeout = 20000,
   } = opts;
 
@@ -57,10 +58,18 @@ function startVncSession(opts) {
       reject(err instanceof Error ? err : new Error(String(err)));
     };
 
-    // Safety: kalau x11vnc menggantung, jangan biarkan promise hang selamanya.
-    const guard = setTimeout(() => fail(new Error("Timeout menjalankan x11vnc")), readyTimeout + 15000);
+    // Safety: jangan biarkan promise hang selamanya.
+    const guard = setTimeout(() => fail(new Error("Timeout membuka sesi VNC")), readyTimeout + 15000);
 
     conn.on("ready", () => {
+      // Mode "direct": VNC server sudah jalan di remote (mis. RealVNC di Raspi),
+      // jadi tidak perlu jalanin x11vnc — langsung buka tunnel ke port VNC-nya.
+      if (vncMode === "direct") {
+        clearTimeout(guard);
+        settled = true;
+        resolve({ host, vncPort, raw: "", connectTunnel, end });
+        return;
+      }
       const cmd = buildX11vncCmd(opts);
       conn.exec(cmd, (err, stream) => {
         if (err) return fail(err);
@@ -85,8 +94,9 @@ function startVncSession(opts) {
 
     conn.on("error", (e) => fail(new Error(`SSH error: ${e.message}`)));
 
-    // Matikan x11vnc di remote lalu tutup koneksi SSH.
+    // Tutup sesi. Mode direct cukup tutup SSH; mode x11vnc matikan x11vnc dulu.
     function end() {
+      if (vncMode === "direct") { try { conn.end(); } catch (_) {} return; }
       try {
         conn.exec(`pkill -f 'x11vnc.*-rfbport ${vncPort}'`, (err, stream) => {
           const done = () => { try { conn.end(); } catch (_) {} };

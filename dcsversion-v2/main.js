@@ -1,6 +1,7 @@
 const { app, BrowserWindow, globalShortcut, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { spawn } = require("child_process");
 
 const { startVncSession } = require("./remote/ssh-session");
 const { createBridge } = require("./remote/ws-bridge");
@@ -63,6 +64,9 @@ function resolveTarget(id, fallbackHost) {
     vncDisplay: m.vncDisplay || d.vncDisplay || ":0",
     vncPort: m.vncPort || d.vncPort || 5900,
     x11vncCmd: m.x11vncCmd || d.x11vncCmd,
+    vncMode: m.vncMode || d.vncMode || "x11vnc",
+    vncPassword: m.vncPassword || d.vncPassword,
+    vncViewerCmd: m.vncViewerCmd || d.vncViewerCmd || "vncviewer",
   };
 }
 
@@ -70,21 +74,49 @@ function resolveTarget(id, fallbackHost) {
 ipcMain.handle("remote:start-vnc", async (_event, { id, fallbackHost }) => {
   // Sudah ada sesi aktif → pakai ulang bridge yang sama.
   if (sessions.has(id)) {
-    return { port: sessions.get(id).bridge.port };
+    const s = sessions.get(id);
+    return { port: s.bridge.port, vncMode: s.vncMode, vncPassword: s.vncPassword };
   }
 
   const target = resolveTarget(id, fallbackHost);
+  if (target.vncMode === "none") {
+    throw new Error("Mesin ini headless — tidak ada tampilan VNC. Gunakan SSH.");
+  }
+  if (target.vncMode === "external") {
+    throw new Error("Mode VNC 'external' — dibuka via viewer sistem, bukan embedded.");
+  }
   const session = await startVncSession(target);
   try {
-    await preflightTunnel(session); // gagal di sini = forwarding/x11vnc bermasalah
+    await preflightTunnel(session); // gagal di sini = forwarding/VNC bermasalah
     const bridge = await createBridge(session.connectTunnel);
-    sessions.set(id, { session, bridge });
-    return { port: bridge.port };
+    const vncPassword = target.vncMode === "direct" ? target.vncPassword : undefined;
+    sessions.set(id, { session, bridge, vncMode: target.vncMode, vncPassword });
+    return { port: bridge.port, vncMode: target.vncMode, vncPassword };
   } catch (e) {
-    // tunnel/bridge gagal → matikan x11vnc yang sempat dinyalakan
+    // tunnel/bridge gagal → bersihkan sesi
     try { session.end(); } catch (_) {}
     throw e;
   }
+});
+
+// VNC "external": langsung buka VNC viewer sistem ke IP (mis. RealVNC ke Raspi),
+// tanpa SSH/x11vnc/embed — persis alur manual "buka RealVNC, masukin IP".
+ipcMain.handle("remote:open-external", (_event, { id, fallbackHost }) => {
+  const t = resolveTarget(id, fallbackHost);
+  const cmd = t.vncViewerCmd || "vncviewer";
+  const addr = t.vncPort && t.vncPort !== 5900 ? `${t.host}::${t.vncPort}` : t.host;
+  return new Promise((resolve, reject) => {
+    let child;
+    try {
+      child = spawn(cmd, [addr], { detached: true, stdio: "ignore" });
+    } catch (e) {
+      return reject(new Error(`Gagal menjalankan '${cmd}': ${e.message}`));
+    }
+    child.on("error", (e) =>
+      reject(new Error(`VNC viewer '${cmd}' tidak bisa dijalankan (terinstall & ada di PATH?): ${e.message}`))
+    );
+    child.on("spawn", () => { try { child.unref(); } catch (_) {} resolve({ ok: true, cmd, addr }); });
+  });
 });
 
 ipcMain.handle("remote:stop", async (_event, { id }) => {
@@ -96,7 +128,14 @@ ipcMain.handle("remote:stop", async (_event, { id }) => {
   return { ok: true };
 });
 
-ipcMain.handle("remote:list", () => Object.keys(secureConfig.loadConfig().machines || {}));
+ipcMain.handle("remote:list", () => {
+  const machines = secureConfig.loadConfig().machines || {};
+  const out = {};
+  for (const [id, cfg] of Object.entries(machines)) {
+    out[id] = { vncMode: cfg.vncMode || "x11vnc" };
+  }
+  return out;
+});
 
 // Config untuk UI "Kelola Remote" (password diredaksi).
 ipcMain.handle("remote:get-config", () => secureConfig.getRedactedConfig());

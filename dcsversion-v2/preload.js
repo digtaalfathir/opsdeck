@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.invoke("remote:start-vnc", { id, fallbackHost }),
     // Tutup sesi: matikan x11vnc + tutup bridge.
     stop: (id) => ipcRenderer.invoke("remote:stop", { id }),
+    // Buka VNC viewer sistem (RealVNC dll) langsung ke IP — untuk vncMode "external".
+    openExternal: (id, fallbackHost) => ipcRenderer.invoke("remote:open-external", { id, fallbackHost }),
     // Daftar id mesin yang dikonfigurasi (untuk menampilkan tombol Remote).
     list: () => ipcRenderer.invoke("remote:list"),
     // Kelola Remote: ambil config (password diredaksi) & simpan.

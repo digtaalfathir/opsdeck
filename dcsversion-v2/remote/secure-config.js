@@ -15,7 +15,7 @@ const CONFIG_PATH =
   process.env.REMOTES_PATH || path.join(__dirname, "..", "remotes.json");
 
 const NUMERIC_FIELDS = new Set(["port", "vncPort"]);
-const COPY_FIELDS = ["host", "port", "username", "vncDisplay", "vncPort", "x11vncCmd", "privateKeyPath"];
+const COPY_FIELDS = ["host", "port", "username", "vncDisplay", "vncPort", "x11vncCmd", "privateKeyPath", "vncMode", "vncViewerCmd"];
 
 function loadConfig() {
   try {
@@ -86,6 +86,7 @@ function getRedactedConfig() {
       vncDisplay: m.vncDisplay,
       vncPort: m.vncPort,
       x11vncCmd: m.x11vncCmd,
+      vncMode: m.vncMode || "x11vnc",
       hasPassword: hasPassword(m),
     };
   }
@@ -120,6 +121,10 @@ function buildEntry(incoming = {}, prev = {}) {
     // tidak diubah → pertahankan yang lama
     if (prev.passwordEnc) e.passwordEnc = prev.passwordEnc;
     else if (prev.password) e.password = prev.password;
+  }
+  // Pertahankan field lanjutan yang tidak ada di form Kelola Remote
+  for (const k of ["vncMode", "vncPassword", "vncPort", "x11vncCmd", "privateKeyPath", "vncViewerCmd"]) {
+    if (e[k] === undefined && prev[k] !== undefined) e[k] = prev[k];
   }
   return e;
 }
