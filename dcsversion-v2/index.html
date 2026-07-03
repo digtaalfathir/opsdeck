@@ -15,10 +15,33 @@
 :root {
   --page-bg: radial-gradient(120% 80% at 50% -10%, #ffffff, #e8edf3);
   --render-shadow: rgba(0,0,0,.20);
+  /* Token permukaan (adaptif tema) — dipakai Overview */
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e6ebf1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --elev: 0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+  --good: #16a34a;
+  --bad: #dc2626;
+  --warn: #d97706;
+  --accent: #3b82f6;
+  --bad-soft: rgba(220,38,38,.09);
 }
 html[data-theme="dark"] {
   --page-bg: radial-gradient(120% 80% at 50% -10%, #11161e, #0a0e13);
   --render-shadow: rgba(0,0,0,.55);
+  --surface: #141b23;
+  --surface-2: #1a232d;
+  --border: #26323d;
+  --text: #e8eff4;
+  --muted: #8a98a5;
+  --elev: 0 2px 10px rgba(0,0,0,.35);
+  --good: #22c55e;
+  --bad: #ff5b73;
+  --warn: #f59e0b;
+  --accent: #3b82f6;
+  --bad-soft: rgba(255,91,115,.11);
 }
 
 /* ================= GLOBAL ================= */
@@ -171,7 +194,7 @@ header {
 }
 
 .arrow:hover {
-  background: #00e676;
+  background: #3b82f6;
 }
 
 .arrow.left { left: 20px; }
@@ -354,8 +377,8 @@ header {
 }
 
 .menu-item:hover {
-  background: #00e676;
-  color: black;
+  background: #3b82f6;
+  color: #fff;
 }
 
 /* ================= BATCH 2: status header + indikator halaman ================= */
@@ -409,9 +432,9 @@ header { display: flex; align-items: center; gap: 18px; }
   width: 8px; height: 8px; border-radius: 50%;
   background: rgba(255,255,255,.25); transition: .3s; cursor: pointer;
 }
-.pg-dot.active { width: 24px; border-radius: 99px; background: #00e676; }
+.pg-dot.active { width: 24px; border-radius: 99px; background: #3b82f6; }
 .pg-progress { width: 90px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.12); overflow: hidden; }
-.pg-progress i { display: block; height: 100%; width: 0%; background: #00e676; border-radius: 2px; }
+.pg-progress i { display: block; height: 100%; width: 0%; background: #3b82f6; border-radius: 2px; }
 
 @keyframes livePing {
   0% { box-shadow: 0 0 0 0 rgba(0,230,118,.5); }
@@ -426,8 +449,8 @@ header { display: flex; align-items: center; gap: 18px; }
 /* ================= REMOTE (v2) ================= */
 
 .remote-btn {
-  background: #00e676;
-  color: #06210f;
+  background: #3b82f6;
+  color: #fff;
   border: none;
   padding: 12px 18px;
   border-radius: 10px;
@@ -441,10 +464,10 @@ header { display: flex; align-items: center; gap: 18px; }
 .remote-btn:disabled:hover { filter: none; }
 
 /* ---- Edit Layout ---- */
-body.edit-layout .machine-box { cursor: move; outline: 1px dashed rgba(0,230,118,.7); }
+body.edit-layout .machine-box { cursor: move; outline: 1px dashed rgba(59,130,246,.7); }
 body.edit-layout .machine-box.selected {
-  outline: 2px solid #00e676;
-  box-shadow: 0 0 0 4px rgba(0,230,118,.25);
+  outline: 2px solid #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59,130,246,.25);
 }
 .edit-toolbar {
   position: fixed; left: 0; right: 0; bottom: 0;
@@ -453,14 +476,14 @@ body.edit-layout .machine-box.selected {
   z-index: 100002; box-shadow: 0 -6px 20px rgba(0,0,0,.4);
   font-size: 14px;
 }
-.edit-title { font-weight: 600; color: #00e676; }
+.edit-title { font-weight: 600; color: #3b82f6; }
 .edit-info { font-size: 12px; color: #9fb0c7; }
 .edit-btn {
   background: #2a3140; color: #fff; border: none;
   padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;
 }
 .edit-btn:hover { background: #384258; }
-.edit-btn.primary { background: #00e676; color: #06210f; font-weight: 600; }
+.edit-btn.primary { background: #3b82f6; color: #fff; font-weight: 600; }
 
 .remote-panel {
   position: fixed;
@@ -512,7 +535,7 @@ body.edit-layout .machine-box.selected {
   padding: 6px 8px;
   overflow: hidden;
 }
-.remote-btn.ssh { background: #4b9fff; color: #04111f; }
+.remote-btn.ssh { background: #4b9fff; color: #f5f5f5; }
 
 /* ---- Kelola Remote modal ---- */
 .rc-modal {
@@ -579,9 +602,79 @@ body.edit-layout .machine-box.selected {
 .rc-add select { flex: 1; }
 .rc-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .rc-btn { border: none; border-radius: 9px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
-.rc-btn.primary { background: #00e676; color: #06210f; font-weight: 600; }
+.rc-btn.primary { background: #3b82f6; color: #fff; font-weight: 600; }
 .rc-btn.ghost { background: #2a3140; color: #fff; }
 .rc-btn:hover { filter: brightness(1.08); }
+/* ================= OVERVIEW (v2) — adaptif light/dark ================= */
+.overview-page { background: transparent; }
+.ov {
+  width: 100%; height: calc(100vh - 60px); box-sizing: border-box;
+  padding: 26px 40px 22px; display: flex; flex-direction: column; gap: 22px; color: var(--text);
+}
+
+/* KPI */
+.ov-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.ov-kpi {
+  position: relative; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 17px 20px; box-shadow: var(--elev); overflow: hidden;
+}
+.ov-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); }
+.ov-kpi.good::before { background: var(--good); }
+.ov-kpi.bad::before  { background: var(--bad); }
+.ov-kpi.warn::before { background: var(--warn); }
+.ov-kpi-label { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.ov-kpi-val { font-size: 38px; font-weight: 800; line-height: 1.05; margin-top: 6px; color: var(--text); font-variant-numeric: tabular-nums; }
+.ov-kpi.good .ov-kpi-val { color: var(--good); }
+.ov-kpi.bad  .ov-kpi-val { color: var(--bad); }
+.ov-kpi.warn .ov-kpi-val { color: var(--warn); }
+
+/* panel (plants + attention) */
+.ov-body { flex: 1; display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; min-height: 0; }
+.ov-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--elev); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.ov-panel-h { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 11.5px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.ov-badge { margin-left: auto; background: var(--bad-soft); color: var(--bad); font-weight: 700; border-radius: 999px; padding: 1px 10px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.ov-badge.ok { background: rgba(34,197,94,.14); color: var(--good); }
+.ov-scroll { flex: 1; overflow: auto; padding: 16px; }
+
+/* plant cards */
+.ov-plants { display: grid; grid-template-columns: repeat(auto-fill, minmax(184px, 1fr)); gap: 14px; align-content: start; }
+.ov-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 13px;
+  padding: 14px 15px; cursor: pointer; transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.ov-card:hover { transform: translateY(-2px); box-shadow: var(--elev); border-color: var(--accent); }
+.ov-card-top { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; color: var(--text); }
+.ov-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.ov-card.down .ov-dot { background: var(--bad); }
+.ov-card.empty .ov-dot { background: var(--muted); }
+.ov-card.serverdown { border-left: 3px solid var(--warn); }
+.ov-card.serverdown .ov-dot { background: var(--warn); animation: pulse 1.4s infinite; }
+.ov-srv { color: var(--warn); font-weight: 800; font-size: 14px; letter-spacing: .3px; margin: 12px 0 2px; }
+.ov-card-num { font-size: 27px; font-weight: 800; margin: 9px 0 0; color: var(--text); font-variant-numeric: tabular-nums; }
+.ov-card-num span { font-size: 15px; font-weight: 600; color: var(--muted); }
+.ov-card-bar { height: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-top: 8px; }
+.ov-card-bar i { display: block; height: 100%; border-radius: 3px; background: var(--good); transition: width .3s; }
+.ov-card.down .ov-card-bar i { background: var(--bad); }
+.ov-card-sub { font-size: 11px; color: var(--muted); margin-top: 7px; display: flex; justify-content: space-between; gap: 8px; }
+.ov-chip-down { color: var(--bad); font-weight: 700; }
+
+/* attention list */
+.ov-attn { display: flex; flex-direction: column; gap: 8px; }
+.ov-attn-row {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--bad);
+  border-radius: 10px; padding: 10px 14px; transition: background .12s;
+}
+.ov-attn-row:hover { background: var(--bad-soft); }
+.ov-sev { width: 9px; height: 9px; border-radius: 50%; background: var(--bad); flex: none; box-shadow: 0 0 0 3px var(--bad-soft); animation: pulse 1.3s infinite; }
+.ov-attn-main { flex: 1; min-width: 0; }
+.ov-attn-name { font-weight: 600; font-size: 13.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-attn-plant { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.ov-attn-ip { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--muted); font-size: 12px; }
+.ov-attn-dur { color: var(--bad); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 82px; text-align: right; }
+.ov-allgood { color: var(--good); font-size: 14px; padding: 34px 20px; text-align: center; font-weight: 600; }
+.ov-allgood span { display: block; font-size: 34px; margin-bottom: 8px; }
+.ov-empty { color: var(--muted); padding: 22px; text-align: center; }
 </style>
 </head>
 
@@ -610,6 +703,23 @@ body.edit-layout .machine-box.selected {
 
 <div class="pages">
   <div class="page-wrapper" id="pageWrapper">
+
+    <!-- PAGE 0: OVERVIEW -->
+    <section class="page overview-page" data-title="Overview">
+      <div class="ov">
+        <div class="ov-kpis" id="ovKpis"></div>
+        <div class="ov-body">
+          <div class="ov-panel">
+            <div class="ov-panel-h">Plant Status</div>
+            <div class="ov-scroll"><div class="ov-plants" id="ovPlants"></div></div>
+          </div>
+          <div class="ov-panel">
+            <div class="ov-panel-h">Attention Required <span id="ovDownCount" class="ov-badge ok">0</span></div>
+            <div class="ov-scroll"><div class="ov-attn" id="ovAttn"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- PAGE 1 -->
     <section class="page"
@@ -1192,6 +1302,7 @@ body.edit-layout .machine-box.selected {
 let currentPage = 0;
 let autoSlideTimer = null;
 const AUTO_SLIDE_DELAY = 10000; // 10 detik
+const OVERVIEW_DELAY = 50000;   // Overview tampil lebih lama
 const wsConnections = {};
 const RECONNECT_DELAY = 3000;
 const DEVICE_TIMEOUT = 15000; // 15 detik
@@ -1432,6 +1543,8 @@ function prevPage() {
 function startAutoSlide() {
   stopAutoSlide();
 
+  const delay = pages[currentPage].classList.contains("overview-page")
+    ? OVERVIEW_DELAY : AUTO_SLIDE_DELAY;
   autoSlideTimer = setTimeout(() => {
     currentPage++;
     if (currentPage >= pages.length) {
@@ -1439,9 +1552,9 @@ function startAutoSlide() {
     }
     updateSlide();
     startAutoSlide(); // loop terus
-  }, AUTO_SLIDE_DELAY);
+  }, delay);
 
-  animateProgress();
+  animateProgress(delay);
 }
 
 function stopAutoSlide() {
@@ -1459,6 +1572,7 @@ function initAllWebSockets() {
   pages.forEach((page) => {
     const server = page.dataset.server;
     const port = page.dataset.port;
+    if (!server || !port) return; // lewati page tanpa server (mis. Overview)
     const key = server + ":" + port;
 
     if (connected[key]) return;
@@ -1539,11 +1653,13 @@ function startDeviceWatcher() {
 
 function updateCounters() {
   const page = pages[currentPage];
-  const boxes = page.querySelectorAll(".machine-box");
+  // Di Overview: pill header = total semua plant; selain itu = plant aktif.
+  const boxes = page.classList.contains("overview-page")
+    ? document.querySelectorAll(".page:not(.overview-page):not(.server-down) .machine-box")
+    : page.querySelectorAll(".machine-box");
 
   let up = 0;
   let down = 0;
-
   boxes.forEach(box => {
     if (box.classList.contains("UP")) up++;
     if (box.classList.contains("DOWN")) down++;
@@ -1551,6 +1667,8 @@ function updateCounters() {
 
   document.getElementById("countUp").textContent = up;
   document.getElementById("countDown").textContent = down;
+
+  renderOverview();
 }
 
 function attachMachineClickEvents() {
@@ -1641,6 +1759,7 @@ function startServerWatcher() {
     pages.forEach((page) => {
       const server = page.dataset.server;
       const port = page.dataset.port;
+      if (!server || !port) return; // Overview tak punya server
       const key = server + ":" + port;
 
       if (!serverLastUpdate[key] || (now - serverLastUpdate[key] > SERVER_TIMEOUT)) {
@@ -1650,6 +1769,7 @@ function startServerWatcher() {
       }
     });
 
+    renderOverview();
   }, 5000);
 }
 
@@ -1870,6 +1990,25 @@ async function openSshTerminal(id, host, name) {
   // ketikan -> shell
   sshTerm.onData((d) => window.electronAPI.ssh.write(id, d));
 
+  // copy/paste: Ctrl+Shift+C / Ctrl+Shift+V, auto-copy saat seleksi, klik-kanan = paste
+  sshTerm.attachCustomKeyEventHandler((e) => {
+    if (e.type !== "keydown" || !e.ctrlKey || !e.shiftKey) return true;
+    const k = (e.key || "").toLowerCase();
+    if (k === "c") { const s = sshTerm.getSelection(); if (s) window.electronAPI.clipboard.write(s); return false; }
+    if (k === "v") { const t = window.electronAPI.clipboard.read(); if (t) window.electronAPI.ssh.write(id, t); return false; }
+    return true;
+  });
+  sshTerm.onSelectionChange(() => { const s = sshTerm.getSelection(); if (s) window.electronAPI.clipboard.write(s); });
+  if (!screen.dataset.pasteBound) {
+    screen.dataset.pasteBound = "1";
+    screen.addEventListener("contextmenu", (ev) => {
+      ev.preventDefault();
+      if (!sshActiveId) return;
+      const t = window.electronAPI.clipboard.read();
+      if (t) window.electronAPI.ssh.write(sshActiveId, t);
+    });
+  }
+
   // output shell -> terminal
   sshDataOff = window.electronAPI.ssh.onData((p) => {
     if (p.id === id) sshTerm.write(p.data);
@@ -2078,13 +2217,13 @@ function goToPage(i) {
   updateSlide();
   startAutoSlide();
 }
-function animateProgress() {
+function animateProgress(dur) {
   const bar = document.getElementById("pgProgressBar");
   if (!bar) return;
   bar.style.transition = "none";
   bar.style.width = "0%";
   void bar.offsetWidth; // paksa reflow
-  bar.style.transition = "width " + AUTO_SLIDE_DELAY + "ms linear";
+  bar.style.transition = "width " + (dur || AUTO_SLIDE_DELAY) + "ms linear";
   bar.style.width = "100%";
 }
 function resetProgress() {
@@ -2154,6 +2293,86 @@ function renderDeviceInfo(dev) {
     });
 
   return html;
+}
+
+/* ===== OVERVIEW (agregasi semua plant) ===== */
+function ovKpi(val, label, tone) {
+  return '<div class="ov-kpi ' + (tone || "") + '"><div class="ov-kpi-label">' + label +
+    '</div><div class="ov-kpi-val">' + val + "</div></div>";
+}
+
+function renderOverview() {
+  const ovPage = document.querySelector(".overview-page");
+  if (!ovPage) return;
+  // render isi hanya saat Overview tampil (hemat kerja + hindari flicker)
+  if (!pages[currentPage].classList.contains("overview-page")) return;
+
+  const plantPages = [...document.querySelectorAll(".page:not(.overview-page)")];
+  let gUp = 0, gDown = 0, gTotal = 0;
+  const down = [];
+
+  const cards = plantPages.map((p) => {
+    const idx = [...pages].indexOf(p);
+    const boxes = [...p.querySelectorAll(".machine-box")];
+    let up = 0, dn = 0;
+    // Server down = plant tak terpantau; device-nya jangan dihitung/di-list.
+    const serverDown = p.classList.contains("server-down");
+    if (!serverDown) boxes.forEach((b) => {
+      if (b.classList.contains("UP")) up++;
+      else if (b.classList.contains("DOWN")) {
+        dn++;
+        const d = deviceData[b.id] || {};
+        down.push({
+          name: (b.querySelector(".name")?.textContent || b.id).trim(),
+          plant: p.dataset.title || "-",
+          ip: d.ip || (b.querySelector(".ip")?.textContent || "").trim() || "-",
+          since: d.downSince,
+          idx,
+        });
+      }
+    });
+    const total = boxes.length;
+    if (!serverDown) { gUp += up; gDown += dn; gTotal += up + dn; }
+    const state = serverDown ? "serverdown" : total === 0 ? "empty" : dn > 0 ? "down" : "up";
+    const pct = total ? Math.round((up / total) * 100) : 0;
+    return { name: p.dataset.title || "-", up, dn, total, state, pct, idx };
+  });
+
+  const health = gTotal ? ((gUp / gTotal) * 100).toFixed(1) : "100.0";
+  document.getElementById("ovKpis").innerHTML =
+    ovKpi(gTotal, "Total Device", "") +
+    ovKpi(gUp, "Online", "good") +
+    ovKpi(gDown, "Offline", gDown ? "bad" : "") +
+    ovKpi(health + "%", "Health", gDown ? "warn" : "good");
+
+  document.getElementById("ovPlants").innerHTML = cards.map((c) => {
+    const inner = c.state === "serverdown"
+      ? '<div class="ov-srv">⚠ SERVER DOWN</div><div class="ov-card-sub"><span>tidak terhubung</span></div>'
+      : '<div class="ov-card-num">' + c.up + "<span>/" + c.total + "</span></div>" +
+        '<div class="ov-card-bar"><i style="width:' + c.pct + '%"></i></div>' +
+        '<div class="ov-card-sub"><span>' + (c.total ? c.pct + "% up" : "belum ada device") + "</span>" +
+          (c.dn ? '<span class="ov-chip-down">' + c.dn + " down</span>" : "<span></span>") + "</div>";
+    return '<div class="ov-card ' + c.state + '" onclick="goToPage(' + c.idx + ')" title="Buka ' + rcEsc(c.name) + '">' +
+      '<div class="ov-card-top"><span class="ov-dot"></span>' + rcEsc(c.name) + "</div>" + inner + "</div>";
+  }).join("") || '<div class="ov-empty">Belum ada plant.</div>';
+
+  down.sort((a, b) => String(a.since || "").localeCompare(String(b.since || ""))); // paling lama down dulu
+  const badge = document.getElementById("ovDownCount");
+  badge.textContent = down.length;
+  badge.className = "ov-badge" + (down.length ? "" : " ok");
+  document.getElementById("ovAttn").innerHTML = down.length
+    ? down.map((d) => {
+        const t = d.since ? new Date(String(d.since).replace(" ", "T")).getTime() : NaN;
+        const dur = isNaN(t) ? "—" : fmtSec(Math.floor((Date.now() - t) / 1000));
+        return '<div class="ov-attn-row" onclick="goToPage(' + d.idx + ')">' +
+          '<span class="ov-sev"></span>' +
+          '<div class="ov-attn-main"><div class="ov-attn-name">' + rcEsc(d.name) +
+            '</div><div class="ov-attn-plant">' + rcEsc(d.plant) + "</div></div>" +
+          '<span class="ov-attn-ip">' + rcEsc(d.ip) + "</span>" +
+          '<span class="ov-attn-dur">' + dur + "</span>" +
+        "</div>";
+      }).join("")
+    : '<div class="ov-allgood"><span>✓</span>All systems operational</div>';
 }
 
 // init

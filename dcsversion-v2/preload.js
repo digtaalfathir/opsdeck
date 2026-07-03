@@ -1,9 +1,14 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, clipboard } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   quitApp: () => ipcRenderer.send("app-quit"),
   // Beri tahu main saat panel remote dibuka/ditutup (untuk lepas/pasang Ctrl+Q).
   setRemoteActive: (active) => ipcRenderer.send("remote:active", active),
+  // Clipboard (buat copy/paste di terminal SSH)
+  clipboard: {
+    read: () => clipboard.readText(),
+    write: (t) => clipboard.writeText(t),
+  },
   // Startup / VPN gate
   vpn: { check: () => ipcRenderer.invoke("vpn:check") },
   enterApp: () => ipcRenderer.send("app:enter"),

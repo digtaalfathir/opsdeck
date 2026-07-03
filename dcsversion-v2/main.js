@@ -9,6 +9,10 @@ const { openShell } = require("./remote/ssh-shell");
 const secureConfig = require("./remote/secure-config");
 const { checkVpn } = require("./vpn-check");
 
+// Matikan hardware acceleration → hindari error GPU/GBM Chromium
+// (gbm_wrapper "Failed to get fd for plane") di sebagian hardware/driver Linux.
+app.disableHardwareAcceleration();
+
 let mainWindow;
 
 // id mesin -> { session, bridge }  (VNC)
