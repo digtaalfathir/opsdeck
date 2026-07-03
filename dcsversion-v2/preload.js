@@ -4,6 +4,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   quitApp: () => ipcRenderer.send("app-quit"),
   // Beri tahu main saat panel remote dibuka/ditutup (untuk lepas/pasang Ctrl+Q).
   setRemoteActive: (active) => ipcRenderer.send("remote:active", active),
+  // Startup / VPN gate
+  vpn: { check: () => ipcRenderer.invoke("vpn:check") },
+  enterApp: () => ipcRenderer.send("app:enter"),
+  onVpnStatus: (cb) => {
+    const h = (_e, s) => cb(s);
+    ipcRenderer.on("vpn:status", h);
+    return () => ipcRenderer.removeListener("vpn:status", h);
+  },
   remote: {
     // Mulai sesi VNC: SSH + x11vnc + bridge. Balikannya { port } WS lokal.
     startVnc: (id, fallbackHost) =>

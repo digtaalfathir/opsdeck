@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stechoq Ops Center</title>
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: ui-sans-serif, "Segoe UI", Roboto, Arial, sans-serif;
+    background: radial-gradient(120% 90% at 50% -10%, #11161e, #0a0e13);
+    color: #e8eff4; display: grid; place-items: center;
+    -webkit-user-select: none; user-select: none;
+  }
+  .wrap { width: 460px; max-width: 88vw; text-align: center; }
+  .brand { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 34px; }
+  .brand .mark {
+    width: 46px; height: 46px; border-radius: 12px; line-height: 0;
+    display: grid; place-items: center;
+    box-shadow: 0 8px 24px rgba(59,130,246,.30);
+  }
+  .brand .mark svg { display: block; border-radius: 12px; }
+  .brand .txt { font-size: 24px; font-weight: 600; letter-spacing: .3px; }
+  .brand .txt b { color: #3b82f6; }
+  .brand .sub { display:block; font-size: 11px; color: #8a98a5; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+  .card {
+    background: rgba(20,27,35,.6); border: 1px solid #26323d; border-radius: 16px;
+    padding: 28px 26px; min-height: 150px; display: grid; place-items: center;
+    backdrop-filter: blur(8px);
+  }
+  .spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #26323d; border-top-color: #3b82f6; animation: spin 0.9s linear infinite; margin: 4px auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ok   { color: #3b82f6; font-size: 19px; font-weight: 700; margin-bottom: 12px; }
+  .warn { color: #ffb020; font-size: 19px; font-weight: 700; margin-bottom: 12px; }
+  .muted{ color: #9fb0c7; font-size: 13px; line-height: 1.6; }
+  .ip   { font-size: 12px; color: #8a98a5; margin: 12px 0; }
+  .ip b { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 20px; color: #e8eff4; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .btn {
+    margin-top: 20px; background: #3b82f6; color: #ffffff; border: none; font: inherit;
+    font-weight: 700; padding: 11px 22px; border-radius: 10px; cursor: pointer;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .foot { margin-top: 22px; font-size: 11px; color: #52627180; letter-spacing: .5px; }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 512 512" width="46" height="46">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1d40af"/>
+          </linearGradient></defs>
+          <rect width="512" height="512" rx="112" fill="url(#lg)"/>
+          <g fill="none" stroke="#ffffff" stroke-width="34">
+            <circle cx="256" cy="256" r="171"/><circle cx="256" cy="256" r="103"/>
+          </g>
+          <circle cx="256" cy="256" r="48" fill="#ffffff"/>
+        </svg>
+      </span>
+      <span class="txt">Stechoq <b>Ops Center</b><span class="sub">Hardware Monitoring &amp; Remote</span></span>
+    </div>
+    <div class="card" id="card"></div>
+    <div class="foot">© Stechoq · Internal Use Only</div>
+  </div>
+
+<script>
+  const card = document.getElementById("card");
+
+  function checking() {
+    card.innerHTML = '<div><div class="spin"></div><div class="muted">Memeriksa koneksi VPN Stechoq…</div></div>';
+  }
+  function connected(res) {
+    card.innerHTML =
+      '<div>' +
+      '<div class="ok">✓ VPN Stechoq terdeteksi</div>' +
+      '<div class="ip">IP VPN<b>' + (res.ip || "-") + "</b></div>" +
+      '<div class="muted">Menghubungkan ke layanan internal…<br>Memulai Stechoq Ops Center…</div>' +
+      "</div>";
+    setTimeout(() => { try { window.electronAPI.enterApp(); } catch (e) {} }, 1300);
+  }
+  function notConnected() {
+    card.innerHTML =
+      '<div>' +
+      '<div class="warn">⚠ VPN Stechoq belum terhubung</div>' +
+      '<div class="muted">Silakan hubungkan VPN Stechoq terlebih dahulu<br>sebelum menggunakan aplikasi.</div>' +
+      '<button class="btn" id="retry">Periksa Lagi</button>' +
+      "</div>";
+    document.getElementById("retry").onclick = run;
+  }
+
+  async function run() {
+    checking();
+    let res;
+    try { res = await window.electronAPI.vpn.check(); }
+    catch (e) { res = { connected: false }; }
+    if (res && res.connected) connected(res);
+    else notConnected();
+  }
+  run();
+</script>
+</body>
+</html>

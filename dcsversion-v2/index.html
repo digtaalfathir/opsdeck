@@ -308,11 +308,6 @@ header {
   50% { opacity: 0.5; }
 }
 
-/* background tetap kelihatan tapi blur */
-.page.server-down .wrapper {
-  /* filter: blur(1px) brightness(0.9); */
-}
-
 /* disable interaction saat down */
 .page.server-down * {
   pointer-events: none;
@@ -599,7 +594,7 @@ body.edit-layout .machine-box.selected {
     </span>
 
     <div id="dropdownMenu" class="dropdown-menu">
-      <div class="menu-item" id="themeMenuItem" onclick="toggleTheme()">🌙 Mode Gelap</div>
+      <div class="menu-item" id="themeMenuItem" onclick="toggleTheme()">Dark Mode</div>
       <div class="menu-item" onclick="toggleEditMode()">Edit Layout</div>
       <div class="menu-item" onclick="openRemoteConfig()">Kelola Remote</div>
       <div class="menu-item" onclick="logout()">Keluar</div>
@@ -1084,6 +1079,15 @@ body.edit-layout .machine-box.selected {
 <div class="page-indicator">
   <div class="pg-dots" id="pgDots"></div>
   <div class="pg-progress"><i id="pgProgressBar"></i></div>
+</div>
+
+<!-- ================= OVERLAY VPN TERPUTUS (v2) ================= -->
+<div id="vpnLost" style="position:fixed;inset:0;z-index:100003;background:rgba(8,10,15,.93);display:none;place-items:center;text-align:center;color:#e8eff4;font-family:'Segoe UI',Arial,sans-serif;">
+  <div>
+    <div style="font-size:46px;margin-bottom:10px;">⚠</div>
+    <div style="font-size:22px;font-weight:700;color:#ffb020;margin-bottom:12px;">VPN Stechoq terputus</div>
+    <div style="color:#9fb0c7;font-size:14px;line-height:1.7;">Koneksi ke jaringan internal hilang.<br>Aplikasi lanjut otomatis begitu VPN tersambung lagi.</div>
+  </div>
 </div>
 
 <!-- ================= MODAL ================= -->
@@ -2034,7 +2038,7 @@ function resetLayout() {
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const item = document.getElementById("themeMenuItem");
-  if (item) item.textContent = theme === "dark" ? "☀ Mode Terang" : "🌙 Mode Gelap";
+  if (item) item.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
 }
 function toggleTheme() {
   document.getElementById("dropdownMenu").classList.remove("show");
@@ -2154,6 +2158,14 @@ function renderDeviceInfo(dev) {
 
 // init
 initTheme();
+
+// v2: overlay saat VPN terputus di tengah pemakaian (dipantau dari main process).
+if (window.electronAPI && window.electronAPI.onVpnStatus) {
+  window.electronAPI.onVpnStatus((s) => {
+    const el = document.getElementById("vpnLost");
+    if (el) el.style.display = (s && s.connected) ? "none" : "grid";
+  });
+}
 initAllWebSockets();
 buildPageIndicator();
 updateSlide();

@@ -1,0 +1,25 @@
+# systemd USER service (opsional) — alternatif autostart untuk Linux.
+# Cocok bila ingin app di-restart otomatis kalau crash.
+#
+# Pasang:
+#   mkdir -p ~/.config/systemd/user
+#   cp stechoq-ops-center.service ~/.config/systemd/user/
+#   (edit ExecStart ke path AppImage/binary hasil install)
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now stechoq-ops-center.service
+#   loginctl enable-linger $USER   # biar jalan tanpa harus login GUI (kalau perlu)
+
+[Unit]
+Description=Stechoq Ops Center
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/opt/StechoqOpsCenter.AppImage
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=graphical-session.target

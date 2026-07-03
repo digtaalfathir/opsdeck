@@ -11,15 +11,22 @@ const fs = require("fs");
 const path = require("path");
 const { safeStorage } = require("electron");
 
-const CONFIG_PATH =
-  process.env.REMOTES_PATH || path.join(__dirname, "..", "remotes.json");
+// Lokasi remotes.json: dev = folder app; ter-package = userData (folder app read-only).
+function getConfigPath() {
+  if (process.env.REMOTES_PATH) return process.env.REMOTES_PATH;
+  try {
+    const { app } = require("electron");
+    if (app && app.isPackaged) return path.join(app.getPath("userData"), "remotes.json");
+  } catch (_) {}
+  return path.join(__dirname, "..", "remotes.json");
+}
 
 const NUMERIC_FIELDS = new Set(["port", "vncPort"]);
 const COPY_FIELDS = ["host", "port", "username", "vncDisplay", "vncPort", "x11vncCmd", "privateKeyPath", "vncMode", "vncViewerCmd"];
 
 function loadConfig() {
   try {
-    const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+    const cfg = JSON.parse(fs.readFileSync(getConfigPath(), "utf8"));
     cfg.defaults = cfg.defaults || {};
     cfg.machines = cfg.machines || {};
     return cfg;
@@ -142,12 +149,12 @@ function saveConfig(editable = {}) {
   for (const [id, m] of Object.entries(editable.machines || {})) {
     out.machines[id] = buildEntry(m, (current.machines || {})[id] || {});
   }
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(out, null, 2));
+  fs.writeFileSync(getConfigPath(), JSON.stringify(out, null, 2));
   return { ok: true, count: Object.keys(out.machines).length };
 }
 
 module.exports = {
-  CONFIG_PATH,
+  getConfigPath,
   loadConfig,
   resolvePassword,
   encryptionAvailable,

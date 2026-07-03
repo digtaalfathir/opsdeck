@@ -7,6 +7,7 @@ const { startVncSession } = require("./remote/ssh-session");
 const { createBridge } = require("./remote/ws-bridge");
 const { openShell } = require("./remote/ssh-shell");
 const secureConfig = require("./remote/secure-config");
+const { checkVpn } = require("./vpn-check");
 
 let mainWindow;
 
@@ -144,13 +145,38 @@ ipcMain.handle("remote:get-config", () => secureConfig.getRedactedConfig());
 ipcMain.handle("remote:save-config", (_event, editable) => secureConfig.saveConfig(editable));
 
 // ---------------- IPC: layout posisi kotak ----------------
-const LAYOUT_PATH = path.join(__dirname, "layout.json");
+function layoutPath() {
+  // Ter-package: folder app read-only → simpan di userData.
+  return app.isPackaged
+    ? path.join(app.getPath("userData"), "layout.json")
+    : path.join(__dirname, "layout.json");
+}
 ipcMain.handle("layout:load", () => {
-  try { return JSON.parse(fs.readFileSync(LAYOUT_PATH, "utf8")); } catch (_) { return null; }
+  try { return JSON.parse(fs.readFileSync(layoutPath(), "utf8")); } catch (_) { return null; }
 });
 ipcMain.handle("layout:save", (_event, data) => {
-  fs.writeFileSync(LAYOUT_PATH, JSON.stringify(data, null, 2));
+  fs.writeFileSync(layoutPath(), JSON.stringify(data, null, 2));
   return { ok: true };
+});
+
+// ---------------- Startup / VPN gate ----------------
+ipcMain.handle("vpn:check", () => checkVpn());
+
+let vpnWatch = null;
+function startVpnWatch() {
+  if (vpnWatch) clearInterval(vpnWatch);
+  vpnWatch = setInterval(async () => {
+    try {
+      const r = await checkVpn();
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("vpn:status", r);
+    } catch (_) {}
+  }, 15000);
+}
+
+// Dipanggil startup screen saat VPN OK → masuk aplikasi utama + mulai pantau VPN.
+ipcMain.on("app:enter", () => {
+  if (mainWindow) mainWindow.loadFile("index.html");
+  startVpnWatch();
 });
 
 // ---------------- IPC: SSH terminal ----------------
@@ -213,7 +239,8 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile("index.html");
+  // Mulai dari startup screen (gate cek VPN); masuk index.html setelah VPN OK.
+  mainWindow.loadFile("startup.html");
 
   // CTRL + Q untuk keluar (dilepas sementara saat panel remote terbuka)
   registerQuitShortcut();
