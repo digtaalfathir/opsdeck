@@ -17,7 +17,8 @@
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
     "dist:mac": "electron-builder --mac",
-    "make:icon": "node build/make-icon.js"
+    "make:icon": "node build/make-icon.js",
+    "make:remotes-portable": "CONVERT_REMOTES=1 electron ."
   },
   "devDependencies": {
     "electron": "^28.3.3",
@@ -45,9 +46,7 @@
       "!try/**",
       "!scripts/**",
       "!dist/**",
-      "!DEPLOYMENT.md",
-      "!remotes.json",
-      "!layout.json"
+      "!DEPLOYMENT.md"
     ],
     "extraMetadata": {
       "main": "main.js"

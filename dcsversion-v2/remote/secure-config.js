@@ -21,18 +21,26 @@ function getConfigPath() {
   return path.join(__dirname, "..", "remotes.json");
 }
 
+// remotes.json bawaan yang ikut di-bundle installer. Dipakai sebagai fallback bila
+// userData belum punya remotes.json (mis. PC baru yang belum pernah "Kelola Remote").
+function seedConfigPath() {
+  return path.join(__dirname, "..", "remotes.json");
+}
+
 const NUMERIC_FIELDS = new Set(["port", "vncPort"]);
 const COPY_FIELDS = ["host", "port", "username", "vncDisplay", "vncPort", "x11vncCmd", "privateKeyPath", "vncMode", "vncViewerCmd"];
 
 function loadConfig() {
-  try {
-    const cfg = JSON.parse(fs.readFileSync(getConfigPath(), "utf8"));
-    cfg.defaults = cfg.defaults || {};
-    cfg.machines = cfg.machines || {};
-    return cfg;
-  } catch (_) {
-    return { defaults: {}, machines: {} };
+  // 1) config milik user (userData saat ter-package) → 2) fallback seed bawaan bundle
+  for (const p of [getConfigPath(), seedConfigPath()]) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(p, "utf8"));
+      cfg.defaults = cfg.defaults || {};
+      cfg.machines = cfg.machines || {};
+      return cfg;
+    } catch (_) {}
   }
+  return { defaults: {}, machines: {} };
 }
 
 function encryptionAvailable() {

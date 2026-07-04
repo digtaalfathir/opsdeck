@@ -149,17 +149,27 @@ ipcMain.handle("remote:get-config", () => secureConfig.getRedactedConfig());
 ipcMain.handle("remote:save-config", (_event, editable) => secureConfig.saveConfig(editable));
 
 // ---------------- IPC: layout posisi kotak ----------------
-function layoutPath() {
-  // Ter-package: folder app read-only → simpan di userData.
+// Tempat simpan layout milik user (harus bisa ditulis). Ter-package → folder app
+// read-only, jadi pakai userData; saat dev → file di folder proyek.
+function userLayoutPath() {
   return app.isPackaged
     ? path.join(app.getPath("userData"), "layout.json")
     : path.join(__dirname, "layout.json");
 }
+// Layout bawaan yang IKUT di-bundle installer (hasil atur di dev = posisi default).
+function seedLayoutPath() {
+  return path.join(__dirname, "layout.json");
+}
 ipcMain.handle("layout:load", () => {
-  try { return JSON.parse(fs.readFileSync(layoutPath(), "utf8")); } catch (_) { return null; }
+  // 1) layout hasil Edit Layout di mesin ini → prioritas
+  try { return JSON.parse(fs.readFileSync(userLayoutPath(), "utf8")); } catch (_) {}
+  // 2) fallback → layout bawaan yang ikut installer, biar exe tampil sesuai atur
+  //    (bukan balik ke posisi HTML awal) di PC yang belum pernah Edit Layout
+  try { return JSON.parse(fs.readFileSync(seedLayoutPath(), "utf8")); } catch (_) {}
+  return null;
 });
 ipcMain.handle("layout:save", (_event, data) => {
-  fs.writeFileSync(layoutPath(), JSON.stringify(data, null, 2));
+  fs.writeFileSync(userLayoutPath(), JSON.stringify(data, null, 2));
   return { ok: true };
 });
 
@@ -255,7 +265,38 @@ function createWindow() {
   });
 }
 
+// One-shot (dipicu env CONVERT_REMOTES=1, via `npm run make:remotes-portable`):
+// decrypt semua passwordEnc → plaintext `password` di remotes.json. WAJIB jalan
+// dengan identitas app ini (`electron .`) supaya kunci keyring cocok dgn yang
+// dipakai saat mengenkripsi. Tujuannya agar remotes.json portable saat di-bundle.
+function convertRemotesToPortable() {
+  const { safeStorage } = require("electron");
+  const p = secureConfig.getConfigPath();
+  let cfg;
+  try { cfg = JSON.parse(fs.readFileSync(p, "utf8")); }
+  catch (e) { console.error("Gagal baca remotes.json:", e.message); return app.exit(1); }
+  if (!safeStorage.isEncryptionAvailable()) {
+    console.error("safeStorage/keyring tidak tersedia di sesi ini → tidak bisa decrypt.");
+    return app.exit(1);
+  }
+  let ok = 0, fail = 0;
+  const conv = (o, label) => {
+    if (!o || !o.passwordEnc) return;
+    try {
+      o.password = safeStorage.decryptString(Buffer.from(o.passwordEnc, "base64"));
+      delete o.passwordEnc; ok++; console.log("  ✓ " + label + " → plaintext");
+    } catch (e) { fail++; console.error("  ✗ " + label + " GAGAL (" + e.message + ")"); }
+  };
+  conv(cfg.defaults, "defaults");
+  for (const [id, m] of Object.entries(cfg.machines || {})) conv(m, id);
+  if (fail > 0) { console.error("\n" + fail + " gagal — remotes.json TIDAK diubah."); return app.exit(1); }
+  fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
+  console.log("\nSelesai: " + ok + " password dikonversi ke plaintext.\nFile: " + p + "\nBuild ulang: npm run dist:win");
+  app.exit(0);
+}
+
 app.whenReady().then(() => {
+  if (process.env.CONVERT_REMOTES === "1") return convertRemotesToPortable();
   createWindow();
 });
 
