@@ -12,9 +12,7 @@ Opsdeck is a desktop console that **monitors the status of your hardware** and l
 **remote into any machine over SSH & VNC** — watch and control, all from one place ("the deck").
 Built for factory-floor / edge fleets (DCS, IPC, IoT nodes, printers, …), but the data source is swappable to any network.
 
-![screenshot](docs/screenshot.png)
-
-> 📸 _Placeholder — drop a real screenshot at `docs/screenshot.png`._
+![screenshot](docs/screenshot.jpeg)
 
 ## Features
 
