@@ -1,10 +1,10 @@
-# Stechoq Ops Center — Deployment & Distribution Guide
+# Opsdeck — Deployment & Distribution Guide
 
-Panduan menyiapkan, mem-*package*, dan mendistribusikan **Stechoq Ops Center** (Electron) untuk Windows, Linux, dan macOS di lingkungan internal Stechoq (via VPN).
+Panduan menyiapkan, mem-*package*, dan mendistribusikan **Opsdeck** (Electron) untuk Windows, Linux, dan macOS di lingkungan internal (via VPN).
 
-- **Product name:** Stechoq Ops Center
-- **App id:** `com.stechoq.opscenter`
-- **Company:** Stechoq · **License:** Internal use only
+- **Product name:** Opsdeck
+- **App id:** `com.opsdeck.app`
+- **Author:** Rifky Andigta Al-Fathir · **License:** MIT
 - Target: **1) Windows (utama) · 2) Linux · 3) macOS**
 
 ---
@@ -14,7 +14,7 @@ Panduan menyiapkan, mem-*package*, dan mendistribusikan **Stechoq Ops Center** (
 Sekali pasang dependency:
 
 ```bash
-cd dcsversion-v2
+cd app
 npm install            # termasuk electron-builder (devDependency)
 npm run make:icon      # bikin build/icon.png placeholder (skip kalau sudah ada logo asli)
 ```
@@ -22,8 +22,8 @@ npm run make:icon      # bikin build/icon.png placeholder (skip kalau sudah ada 
 Build:
 
 ```bash
-npm run dist:win       # Windows  -> dist/StechoqOpsCenter-Setup-<versi>.exe (installer NSIS)
-npm run dist:linux     # Linux    -> dist/StechoqOpsCenter-<versi>.AppImage + .deb
+npm run dist:win       # Windows  -> dist/Opsdeck-Setup-<versi>.exe (installer NSIS)
+npm run dist:linux     # Linux    -> dist/Opsdeck-<versi>.AppImage + .deb
 npm run dist:mac       # macOS    -> dist/*.dmg  (harus di-build di macOS)
 npm run pack           # build cepat tanpa installer (folder dist/*-unpacked) untuk tes
 ```
@@ -42,11 +42,11 @@ Zorin berbasis Ubuntu, jadi bisa produksi installer Windows dari sini. **`.exe` 
 
 **Cara A — Docker (paling andal, tanpa oprek Wine di host):**
 ```bash
-cd dcsversion-v2
+cd app
 docker run --rm -ti -v "$PWD":/project -w /project \
   electronuserland/builder:wine \
   /bin/bash -c "npm install && npm run dist:win"
-# hasil: dist/StechoqOpsCenter-Setup-2.0.0.exe
+# hasil: dist/Opsdeck-Setup-2.0.0.exe
 ```
 Image itu sudah berisi Wine + tooling yang cocok — paling minim masalah.
 
@@ -57,7 +57,7 @@ sudo apt update
 sudo apt install -y wine64 wine32
 wine --version            # sekaligus init prefix Wine pertama kali
 
-cd dcsversion-v2
+cd app
 npm install
 npm run make:icon         # atau taruh logo asli di build/icon.png
 npm run dist:win          # electron-builder pakai Wine utk rcedit (icon+metadata exe) + NSIS
@@ -81,8 +81,8 @@ Sudah diset di `package.json` (`productName`, `author`, `copyright`, `build.appI
 
 | Item | Lokasi | Status |
 |---|---|---|
-| **Product Name** | `Stechoq Ops Center` | ✅ |
-| **Company** | `Stechoq` | ✅ |
+| **Product Name** | `Opsdeck` | ✅ |
+| **Author** | `Rifky Andigta Al-Fathir` | ✅ |
 | **Version** | `package.json` → `version` (SemVer, mis. `2.0.0`) | ✅ (naikkan tiap rilis) |
 | **Copyright** | `package.json` → `copyright` | ✅ |
 | **App icon** | `build/icon.png` (1024²) → auto jadi .ico/.icns | ⚠️ **placeholder**, ganti logo asli |
@@ -120,8 +120,8 @@ App menganggap **connected = punya IP VPN** (tidak keras mensyaratkan probe, bia
 
 - App load **`startup.html`** dulu (bukan langsung dashboard).
 - **VPN belum aktif:** tampil peringatan + tombol **Periksa Lagi**.
-- **VPN aktif:** tampil ✓ + IP VPN → "Memulai Stechoq Ops Center…" → otomatis masuk dashboard (`app:enter` → load `index.html`).
-- **VPN putus di tengah pakai:** main process memantau tiap 15 dtk (`startVpnWatch`) dan kirim `vpn:status`; dashboard menampilkan **overlay "VPN Stechoq terputus"**, hilang otomatis begitu VPN balik.
+- **VPN aktif:** tampil ✓ + IP VPN → "Memulai Opsdeck…" → otomatis masuk dashboard (`app:enter` → load `index.html`).
+- **VPN putus di tengah pakai:** main process memantau tiap 15 dtk (`startVpnWatch`) dan kirim `vpn:status`; dashboard menampilkan **overlay "VPN terputus"**, hilang otomatis begitu VPN balik.
 
 ---
 
@@ -131,7 +131,7 @@ App menulis data user (bukan di folder install yang read-only) ke **`userData`**
 
 | Data | Windows | Linux | macOS |
 |---|---|---|---|
-| Base `userData` | `%APPDATA%\Stechoq Ops Center` | `~/.config/Stechoq Ops Center` | `~/Library/Application Support/Stechoq Ops Center` |
+| Base `userData` | `%APPDATA%\Opsdeck` | `~/.config/Opsdeck` | `~/Library/Application Support/Opsdeck` |
 | Kredensial remote | `userData\remotes.json` | sda | sda |
 | Layout kotak | `userData\layout.json` | sda | sda |
 | Cache | `userData\Cache`, `GPUCache` (otomatis Electron) | sda | sda |
@@ -178,10 +178,10 @@ Karena app **internal-only via VPN**, update server cukup di dalam VPN. Jangan a
 
 **Autostart saat login (XDG):**
 ```bash
-bash scripts/install-autostart.sh /opt/StechoqOpsCenter.AppImage
-# atau dev: bash scripts/install-autostart.sh "sh -c 'cd $HOME/dcsversion-v2 && npm start'"
+bash scripts/install-autostart.sh /opt/Opsdeck.AppImage
+# atau dev: bash scripts/install-autostart.sh "sh -c 'cd $HOME/app && npm start'"
 ```
-**Sebagai service (opsional, auto-restart bila crash):** lihat [`scripts/stechoq-ops-center.service`](scripts/stechoq-ops-center.service) (systemd user unit).
+**Sebagai service (opsional, auto-restart bila crash):** lihat [`scripts/opsdeck.service`](scripts/opsdeck.service) (systemd user unit).
 
 Windows: shortcut Startup / Task Scheduler (installer sudah bikin shortcut Desktop & Start Menu).
 
@@ -213,7 +213,7 @@ Windows: shortcut Startup / Task Scheduler (installer sudah bikin shortcut Deskt
 - **UX:** startup gate jelas, status LIVE + last-update, indikator halaman, mode gelap/terang, pesan error yang actionable.
 - **Struktur scalable:**
   ```
-  dcsversion-v2/
+  app/
   ├── main.js            proses utama (window, IPC, VPN gate)
   ├── preload.js         jembatan contextBridge
   ├── startup.html       startup / VPN gate
@@ -231,9 +231,9 @@ Windows: shortcut Startup / Task Scheduler (installer sudah bikin shortcut Deskt
 ## Ringkas: dari nol ke installer
 
 ```bash
-cd dcsversion-v2
+cd app
 npm install
 npm run make:icon                 # atau ganti build/icon.png dgn logo asli
-npm run dist:win                  # -> dist/StechoqOpsCenter-Setup-2.0.0.exe
+npm run dist:win                  # -> dist/Opsdeck-Setup-2.0.0.exe
 # distribusikan .exe ke user Windows → install → jalan (butuh VPN aktif)
 ```

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stechoq Ops Center</title>
+<title>Opsdeck</title>
 
 <!-- xterm.js (v2, untuk SSH terminal) -->
 <link rel="stylesheet" href="./node_modules/@xterm/xterm/css/xterm.css">
@@ -698,7 +698,7 @@ body.edit-layout .machine-box.selected {
 <header id="mainHeader">
   <div class="header-menu">
     <span id="titleText" onclick="toggleMenu()">
-      Stechoq Ops Center - Maka Motors
+      Opsdeck - Maka Motors
     </span>
 
     <div id="dropdownMenu" class="dropdown-menu">
@@ -1210,7 +1210,7 @@ body.edit-layout .machine-box.selected {
 <div id="vpnLost" style="position:fixed;inset:0;z-index:100003;background:rgba(8,10,15,.93);display:none;place-items:center;text-align:center;color:#e8eff4;font-family:'Segoe UI',Arial,sans-serif;">
   <div>
     <div style="font-size:46px;margin-bottom:10px;">⚠</div>
-    <div style="font-size:22px;font-weight:700;color:#ffb020;margin-bottom:12px;">VPN Stechoq terputus</div>
+    <div style="font-size:22px;font-weight:700;color:#ffb020;margin-bottom:12px;">VPN terputus</div>
     <div style="color:#9fb0c7;font-size:14px;line-height:1.7;">Koneksi ke jaringan internal hilang.<br>Aplikasi lanjut otomatis begitu VPN tersambung lagi.</div>
   </div>
 </div>
@@ -1522,7 +1522,7 @@ function updateSlide() {
   const page = pages[currentPage];
 
   document.getElementById("titleText").textContent =
-    "Stechoq Ops Center : " + page.dataset.title;
+    "Opsdeck : " + page.dataset.title;
 
   updateCounters();
   updatePageIndicator();

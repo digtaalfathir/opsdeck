@@ -3,20 +3,20 @@
 #
 # Pasang:
 #   mkdir -p ~/.config/systemd/user
-#   cp stechoq-ops-center.service ~/.config/systemd/user/
+#   cp opsdeck.service ~/.config/systemd/user/
 #   (edit ExecStart ke path AppImage/binary hasil install)
 #   systemctl --user daemon-reload
-#   systemctl --user enable --now stechoq-ops-center.service
+#   systemctl --user enable --now opsdeck.service
 #   loginctl enable-linger $USER   # biar jalan tanpa harus login GUI (kalau perlu)
 
 [Unit]
-Description=Stechoq Ops Center
+Description=Opsdeck
 After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/opt/StechoqOpsCenter.AppImage
+ExecStart=/opt/Opsdeck.AppImage
 Restart=on-failure
 RestartSec=5
 Environment=DISPLAY=:0

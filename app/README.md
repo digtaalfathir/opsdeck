@@ -1,11 +1,9 @@
-# Dashboard v2 (dcsversion-v2)
+# Opsdeck — internals
 
-Semua fitur [v1](../dcsversion/README.md) **+ remote langsung dari dashboard**:
+Monitoring denah pabrik **+ remote langsung dari dashboard**:
 - 🖥️ **Remote Desktop (VNC)** embedded — klik mesin → desktop muncul di dalam app (noVNC).
 - ⌨️ **SSH Terminal** embedded — terminal interaktif di dalam app (xterm.js).
 - ⚙️ **Kelola Remote** — UI atur kredensial per-mesin; password disimpan terenkripsi.
-
-> Versi lama (`../dcsversion`) tidak diubah — v2 ini folder terpisah.
 
 ## Cara kerja remote
 

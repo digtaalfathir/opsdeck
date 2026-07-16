@@ -1,5 +1,5 @@
 // build/make-icon.js — generate icon.png (1024x1024) tanpa dependency (pure Node).
-// Logo Stechoq Ops Center: biru-putih, motif "radar/monitor" (titik + 2 cincin) —
+// Logo Opsdeck: biru-putih, motif "radar/monitor" (titik + 2 cincin) —
 // simpel & profesional. electron-builder otomatis bikin .ico/.icns dari file ini.
 const zlib = require("zlib");
 const fs = require("fs");

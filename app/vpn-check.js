@@ -1,4 +1,4 @@
-// vpn-check.js — deteksi apakah PC ini sudah berada di jaringan VPN internal Stechoq.
+// vpn-check.js — deteksi apakah PC ini sudah berada di jaringan VPN internal.
 //
 // Pendekatan gabungan (paling reliable untuk enterprise):
 //   1) Cek apakah ada IPv4 interface yang berada di SUBNET VPN (mis. 10.10.0.0/23).

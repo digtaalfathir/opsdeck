@@ -1,4 +1,4 @@
-# Build resources — Stechoq Ops Center
+# Build resources — Opsdeck
 
 Folder ini dipakai `electron-builder` sebagai `buildResources` (tidak ikut ter-bundle ke dalam aplikasi).
 

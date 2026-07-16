@@ -1,7 +1,7 @@
 // scripts/test-ssh.js [id ...]
 // Tes koneksi + autentikasi SSH ke server di remotes.json (pakai kredensial &
 // resolvePassword yang sama dgn app). Menampilkan ✓/✗ saja, BUKAN passwordnya.
-// Host 10.10.x butuh VPN Stechoq aktif. Contoh:
+// Host 10.10.x butuh VPN aktif. Contoh:
 //   node scripts/test-ssh.js SERVER_JMP SERVER_SUGITY
 
 const { Client } = require("ssh2");

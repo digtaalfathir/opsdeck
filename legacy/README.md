@@ -1,6 +1,6 @@
 # Dashboard v1 (dcsversion)
 
-Aplikasi **Electron** fullscreen-kiosk untuk monitoring status hardware di atas denah pabrik. **Monitoring saja** — untuk fitur remote, lihat [`../dcsversion-v2`](../dcsversion-v2/README.md).
+Aplikasi **Electron** fullscreen-kiosk untuk monitoring status hardware di atas denah pabrik. **Monitoring saja** — untuk fitur remote, lihat [`../app`](../app/README.md).
 
 ## Fitur
 - Denah pabrik per plant; geser kiri/kanan (tombol panah di layar, keyboard ←/→, atau auto-slide tiap 10 detik).

@@ -1,14 +1,11 @@
 {
-  "name": "stechoq-ops-center",
-  "productName": "Stechoq Ops Center",
+  "name": "opsdeck",
+  "productName": "Opsdeck",
   "version": "2.0.0",
-  "description": "Stechoq Ops Center — monitoring hardware & remote (VNC/SSH) untuk jaringan internal Stechoq.",
-  "author": {
-    "name": "Stechoq",
-    "email": "support@stechoq.com"
-  },
-  "license": "UNLICENSED",
-  "copyright": "Copyright © 2026 Stechoq. Internal use only.",
+  "description": "Watch and reach every machine from one deck — hardware monitoring + remote SSH/VNC in one console.",
+  "author": "Rifky Andigta Al-Fathir",
+  "license": "MIT",
+  "copyright": "Copyright © 2026 Rifky Andigta Al-Fathir",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -32,9 +29,9 @@
     "ws": "^8.16.0"
   },
   "build": {
-    "appId": "com.stechoq.opscenter",
-    "productName": "Stechoq Ops Center",
-    "copyright": "Copyright © 2026 Stechoq. Internal use only.",
+    "appId": "com.opsdeck.app",
+    "productName": "Opsdeck",
+    "copyright": "Copyright © 2026 Rifky Andigta Al-Fathir",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -62,15 +59,15 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Stechoq Ops Center",
-      "uninstallDisplayName": "Stechoq Ops Center",
-      "artifactName": "StechoqOpsCenter-Setup-${version}.${ext}"
+      "shortcutName": "Opsdeck",
+      "uninstallDisplayName": "Opsdeck",
+      "artifactName": "Opsdeck-Setup-${version}.${ext}"
     },
     "linux": {
       "target": ["AppImage", "deb"],
       "category": "Utility",
-      "maintainer": "Stechoq <support@stechoq.com>",
-      "artifactName": "StechoqOpsCenter-${version}.${ext}"
+      "maintainer": "Rifky Andigta Al-Fathir",
+      "artifactName": "Opsdeck-${version}.${ext}"
     },
     "mac": {
       "target": ["dmg"],

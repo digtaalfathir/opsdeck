@@ -1,8 +1,8 @@
-dcsversion/node_modules
-dcsversion-v2/node_modules
-dcsversion-v2/remotes.json
-dcsversion-v2/*.bak
-dcsversion-v2/try
-dcsversion-v2/dist
+legacy/node_modules
+app/node_modules
+app/remotes.json
+app/*.bak
+app/try
+app/dist
 .claude
 .gitignore

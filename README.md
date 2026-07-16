@@ -1,59 +1,85 @@
-# Stechoq Hardware Monitoring
+<h1 align="center">Opsdeck</h1>
+<p align="center"><em>Watch and reach every machine from one deck.</em></p>
 
-Dashboard monitoring status hardware (DCS/IPC, IoT node, printer, nutrunner, dll) di beberapa plant, ditampilkan di atas denah pabrik. **v2** menambah kemampuan **remote** (VNC & SSH) langsung dari dashboard.
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
+  <img src="https://img.shields.io/badge/version-2.0.0-informational.svg" alt="version">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg" alt="platform">
+  <img src="https://img.shields.io/badge/Electron-28-47848F.svg?logo=electron&logoColor=white" alt="electron">
+</p>
 
-## Cara kerja (garis besar)
+Opsdeck is a desktop console that **monitors the status of your hardware** and lets you
+**remote into any machine over SSH & VNC** — watch and control, all from one place ("the deck").
+Built for factory-floor / edge fleets (DCS, IPC, IoT nodes, printers, …), but the data source is swappable to any network.
+
+![screenshot](docs/screenshot.png)
+
+> 📸 _Placeholder — drop a real screenshot at `docs/screenshot.png`._
+
+## Features
+
+- **📊 Monitoring** — every device rendered as a live UP/DOWN dot on a floor-plan; a monitor server pings each host every 3s and broadcasts status over WebSocket. Multi-plant with auto-slide and an aggregate Overview page.
+- **⌨️ Remote SSH** — interactive terminal embedded in the app (xterm.js), with copy/paste. No external client.
+- **🖥️ Remote VNC** — click a machine → its desktop appears inside the app (noVNC), tunneled over SSH. Supports headless (SSH-only) and external-viewer (e.g. RealVNC) machines too.
+
+## How it works
 
 ```
-[ Device di pabrik ]  ◄── ping tiap 3s ──  [ Monitor Server (Node + WebSocket) ]
-                                                     │  broadcast status UP/DOWN
-                                                     ▼
-                                           [ Dashboard Electron (kiosk) ]
-                                           denah pabrik + titik status hijau/merah
-                                           (v2: klik mesin → Remote VNC / SSH)
+[ Devices ]  ◄── ping every 3s ──  [ Monitor server (Node + WebSocket) ]
+                                              │  broadcast UP/DOWN
+                                              ▼
+                                     [ Opsdeck (Electron) ]
+                                     floor-plan + status dots
+                                     click a machine → SSH / VNC (over SSH tunnel)
 ```
 
-- **Monitor server** nge-ping daftar device tiap 3 detik, lalu broadcast UP/DOWN ke semua dashboard via WebSocket.
-- **Dashboard** (Electron, fullscreen kiosk) nampilin tiap device sebagai kotak di atas gambar denah — hijau (UP) / merah (DOWN). Bisa geser antar halaman/plant.
+## Installation
 
-## Struktur repo
+**From a release:** download the installer for your OS and run it (Windows → `Opsdeck-Setup-<version>.exe`).
 
-| Path | Isi | Keterangan |
-|---|---|---|
-| `dcsversion/` | **Dashboard v1** (Electron) | Versi produksi — monitoring saja |
-| `dcsversion-v2/` | **Dashboard v2** (Electron) | v1 + **Remote VNC & SSH** + Kelola Remote + tema gelap/terang |
-| `serverside/` | **Monitor server** | Node WebSocket ping monitor |
-| `shared/` | `needrestart.json` | File flag antar-proses dari server |
-| `ide.txt` | Catatan ide | Rencana fitur (v3, dll) |
+**From source:**
+```bash
+cd app
+npm install
+npm start                 # run the app
+npm run dist:win          # build a Windows installer (needs Wine on Linux)
+```
 
-Tiap folder dashboard self-contained (punya gambar denah & mesin sendiri).
+## Usage
 
-README detail per folder: [dcsversion](dcsversion/README.md) · [dcsversion-v2](dcsversion-v2/README.md) · [serverside](serverside/README.md)
+1. Start the monitor server on your network (`serverside/`).
+2. Launch Opsdeck. It checks the network gate, then shows the floor-plan; pages auto-slide between plants.
+3. Click a machine → a detail modal opens → **VNC** or **SSH Terminal**.
+4. Manage per-machine credentials from the header menu → **Kelola Remote**, or edit `app/remotes.json`.
 
-## Quick start
+## Configuration (swap the data source)
 
-1. **Monitor server** (di server plant):
-   ```bash
-   cd serverside
-   npm init -y && npm install ping ws    # serverside belum punya package.json
-   node index.js
-   ```
-2. **Dashboard** (di PC operator):
-   ```bash
-   cd dcsversion-v2      # atau dcsversion untuk v1
-   npm install
-   npm start
-   ```
+Opsdeck ships pointed at one network; repoint it by editing three places:
 
-## Konfigurasi singkat
+| What | Where |
+|---|---|
+| Monitored hosts (ping list) | `serverside/` — the `devices` list |
+| Plants & device boxes | `app/index.html` — each `<section class="page" data-server="IP" data-port="PORT">` is a plant; each `.machine-box` `id` = device name sanitized (`[^a-zA-Z0-9]`→`_`). Box positions are drag-editable via **Edit Layout** (saved to `layout.json`). |
+| Remote hosts & credentials | `app/remotes.json` (gitignored) or the in-app **Kelola Remote** UI |
+| Network / VPN gate | `app/vpn-check.js` — subnets & reachability probes |
 
-- **Daftar device** (yang di-ping): array `devices` di `serverside/index.js`.
-- **Halaman & posisi kotak**: di `dcsversion-v2/index.html` (atau `dcsversion/index.html` untuk v1) — tiap `<section class="page" data-server="IP" data-port="PORT">` = 1 plant, tiap `.machine-box` = 1 device. `id` kotak **harus** = nama device yang disanitasi (`[^a-zA-Z0-9]` → `_`). Di v2 posisi kotak bisa diatur lewat **Edit Layout** (drag & simpan ke `layout.json`).
-- **Remote (v2)**: per-mesin di `dcsversion-v2/remotes.json` atau lewat UI **Kelola Remote**.
+## Project structure
 
-## ⚠️ Catatan / known issues
+| Path | Contents |
+|---|---|
+| `app/` | The Opsdeck desktop app (Electron) — [internals README](app/README.md) |
+| `serverside/` | Monitor server (Node WebSocket ping monitor) |
+| `shared/` | Cross-process flag files |
+| `legacy/` | Earlier monitoring-only version (kept for reference) |
 
-- **Port server**: `serverside/index.js` pakai `10012`, tapi dashboard connect ke `10011`. Samakan port server dengan `data-port` di dashboard.
-- Kotak `DCS_REPAIR_OUT_LINE_F4` di denah belum punya device sumber → selalu tampil DOWN.
-- Flag `needrestart` di server tidak otomatis di-clear saat device pulih.
-- `index.html` ada **2 salinan** (`dcsversion/`, `dcsversion-v2/`) — perubahan logika yang sama perlu disinkronkan ke keduanya.
+## Tech Stack
+
+Electron · noVNC · xterm.js · ssh2 · ws · Node.js
+
+## License
+
+[MIT](LICENSE) © Rifky Andigta Al-Fathir
+
+---
+
+<sub>Originally built for hardware ops at Stechoq.</sub>

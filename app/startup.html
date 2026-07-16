@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stechoq Ops Center</title>
+<title>Opsdeck</title>
 <style>
   html, body { height: 100%; margin: 0; overflow: hidden; }
   body {
@@ -59,32 +59,32 @@
           <circle cx="256" cy="256" r="48" fill="#ffffff"/>
         </svg>
       </span>
-      <span class="txt">Stechoq <b>Ops Center</b><span class="sub">Hardware Monitoring &amp; Remote</span></span>
+      <span class="txt"><b>Opsdeck</b><span class="sub">Hardware Monitoring &amp; Remote</span></span>
     </div>
     <div class="card" id="card"></div>
-    <div class="foot">© Stechoq · Internal Use Only</div>
+    <div class="foot">Opsdeck</div>
   </div>
 
 <script>
   const card = document.getElementById("card");
 
   function checking() {
-    card.innerHTML = '<div><div class="spin"></div><div class="muted">Memeriksa koneksi VPN Stechoq…</div></div>';
+    card.innerHTML = '<div><div class="spin"></div><div class="muted">Memeriksa koneksi VPN…</div></div>';
   }
   function connected(res) {
     card.innerHTML =
       '<div>' +
-      '<div class="ok">✓ VPN Stechoq terdeteksi</div>' +
+      '<div class="ok">✓ VPN terdeteksi</div>' +
       '<div class="ip">IP VPN<b>' + (res.ip || "-") + "</b></div>" +
-      '<div class="muted">Menghubungkan ke layanan internal…<br>Memulai Stechoq Ops Center…</div>' +
+      '<div class="muted">Menghubungkan ke layanan internal…<br>Memulai Opsdeck…</div>' +
       "</div>";
     setTimeout(() => { try { window.electronAPI.enterApp(); } catch (e) {} }, 1300);
   }
   function notConnected() {
     card.innerHTML =
       '<div>' +
-      '<div class="warn">⚠ VPN Stechoq belum terhubung</div>' +
-      '<div class="muted">Silakan hubungkan VPN Stechoq terlebih dahulu<br>sebelum menggunakan aplikasi.</div>' +
+      '<div class="warn">⚠ VPN belum terhubung</div>' +
+      '<div class="muted">Silakan hubungkan VPN terlebih dahulu<br>sebelum menggunakan aplikasi.</div>' +
       '<button class="btn" id="retry">Periksa Lagi</button>' +
       "</div>";
     document.getElementById("retry").onclick = run;
